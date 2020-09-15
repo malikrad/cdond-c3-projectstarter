@@ -63,6 +63,7 @@ jobs:
           name: Test frontend
           command: |
             cd frontend
+            npm start
             npm run test
 
   test-backend:
@@ -74,6 +75,7 @@ jobs:
           name: Test backend
           command: |
             cd backend
+            npm start
             npm run test
 
 #  scan-frontend:

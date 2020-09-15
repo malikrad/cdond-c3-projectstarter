@@ -14,7 +14,7 @@ version: 2.1
 jobs:
   hello-world: # Delete this job when you get started
     docker:
-      - image: amazon/aws-cli
+      - image: circleci/node:10.16.3
     steps:
       - checkout
       - run:

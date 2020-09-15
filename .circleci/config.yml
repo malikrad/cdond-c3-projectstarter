@@ -22,9 +22,37 @@ jobs:
           command: |
             echo "Hello World"
 
-#  build-frontend:
-
-#  build-frontend:
+build-frontend:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install npm
+          command: |
+            cd frontend
+            npm i
+      - run:
+          name: Build frontend
+          command: |
+            cd frontend
+            npm run build
+            
+build-backend:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install npm
+          command: |
+            cd backend
+            npm i
+      - run:
+          name: Build backend
+          command: |
+            cd backend
+            npm run build
 
 #  test-frontend:
 
@@ -52,3 +80,11 @@ workflows:
   default:
     jobs:
       - hello-world
+      
+  frontend:
+    jobs:
+      - build-frontend
+
+  backend:
+    jobs:
+      - build-backend 

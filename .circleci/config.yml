@@ -14,7 +14,7 @@ version: 2.1
 jobs:
   hello-world: # Delete this job when you get started
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -24,7 +24,7 @@ jobs:
 
   build-frontend:
     docker:
-      - image: amazon/aws-cli
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -40,7 +40,7 @@ jobs:
             
   build-backend:
     docker:
-      - image: amazon/aws-cli
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:

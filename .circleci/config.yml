@@ -14,7 +14,7 @@ version: 2.1
 jobs:
   hello-world: # Delete this job when you get started
     docker:
-      - image: circleci/node:13.8.0
+      - image: circleci/node:10.16.3
     steps:
       - checkout
       - run:
@@ -24,7 +24,7 @@ jobs:
 
   build-frontend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: circleci/node:10.16.3
     steps:
       - checkout
       - run:
@@ -40,7 +40,7 @@ jobs:
             
   build-backend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: circleci/node:10.16.3
     steps:
       - checkout
       - run:
@@ -56,33 +56,58 @@ jobs:
 
   test-frontend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: circleci/node:10.16.3
     steps:
       - checkout
       - run:
           name: Test frontend
           command: |
             cd frontend
-            npm install
+            npm i
             npm start
             npm run test
 
   test-backend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: circleci/node:10.16.3
     steps:
       - checkout
       - run:
           name: Test backend
           command: |
             cd backend
-            npm install
+            npm i
             npm start
             npm run test
 
-#  scan-frontend:
+    analyze-frontend:
+    docker:
+      - image: circleci/node:10.16.3
+    steps:
+      - checkout
+      - run:
+          name: Analyze frontend
+          command: |
+            cd backend
+            npm i
+            npm start
+            npm audit --audit-level=critical
+            npm audit fix --audit-level=critical --force
+            
+    analyze-backend:
+    docker:
+      - image: circleci/node:10.16.3
+    steps:
+      - checkout
+      - run:
+          name: Analyze backend
+          command: |
+            cd backend
+            npm i
+            npm start
+            npm audit --audit-level=critical
+            npm audit fix --audit-level=critical --force
 
-#  scan-backend:
 
 #  deploy-infrastructure:
 
@@ -109,10 +134,15 @@ workflows:
       - test-frontend:
           requires:
             - build-frontend   
-
+      - analyze-frontend:
+          requires:
+            - test-frontend
   backend:
     jobs:
       - build-backend 
       - test-backend:
           requires:
             - build-backend
+      - analyze-backend:
+          requires:
+            - test-backend

@@ -54,11 +54,29 @@ jobs:
             cd backend
             npm run build
 
-#  test-frontend:
+  test-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Test frontend
+          command: |
+            cd frontend
+            npm run test
 
-#  est-backend:
+  test-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Test backend
+          command: |
+            cd backend
+            npm run test
 
-#  can-frontend:
+#  scan-frontend:
 
 #  scan-backend:
 
@@ -84,7 +102,13 @@ workflows:
   frontend:
     jobs:
       - build-frontend
+      - test-frontend:
+          requires:
+            - build-frontend   
 
   backend:
     jobs:
       - build-backend 
+      - test-backend:
+          requires:
+            - build-backend

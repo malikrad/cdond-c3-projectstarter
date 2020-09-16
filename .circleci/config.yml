@@ -22,7 +22,34 @@ jobs:
           command: |
             echo "Hello World"
 
-  build-frontend:
+  analyze-frontend:
+    docker:
+      - image: circleci/node:10.16.3
+    steps:
+      - checkout
+      - run:
+          name: Analyze frontend
+          command: |
+            cd backend
+            npm i
+            npm start
+            npm audit --audit-level=critical
+            npm audit fix --audit-level=critical --force
+            
+  analyze-backend:
+    docker:
+      - image: circleci/node:10.16.3
+    steps:
+      - checkout
+      - run:
+          name: Analyze backend
+          command: |
+            cd backend
+            npm i
+            npm start
+            npm audit --audit-level=critical
+            npm audit fix --audit-level=critical --force
+ build-frontend:
     docker:
       - image: circleci/node:10.16.3
     steps:
@@ -80,34 +107,6 @@ jobs:
             npm start
             npm run test
 
-  analyze-frontend:
-    docker:
-      - image: circleci/node:10.16.3
-    steps:
-      - checkout
-      - run:
-          name: Analyze frontend
-          command: |
-            cd backend
-            npm i
-            npm start
-            npm audit --audit-level=critical
-            npm audit fix --audit-level=critical --force
-            
-  analyze-backend:
-    docker:
-      - image: circleci/node:10.16.3
-    steps:
-      - checkout
-      - run:
-          name: Analyze backend
-          command: |
-            cd backend
-            npm i
-            npm start
-            npm audit --audit-level=critical
-            npm audit fix --audit-level=critical --force
-
 
 #  deploy-infrastructure:
 
@@ -139,10 +138,11 @@ workflows:
             - test-frontend
   backend:
     jobs:
+      - analyze-backend
       - build-backend 
+          requires:
+            - analyze-backend
       - test-backend:
           requires:
             - build-backend
-      - analyze-backend:
-          requires:
-            - test-backend
+

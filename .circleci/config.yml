@@ -45,7 +45,6 @@ jobs:
           command: |
             cd backend
             npm i
-            npm audit --audit-level=critical
             npm audit fix --audit-level=critical --force
             
   build-frontend:
@@ -81,6 +80,7 @@ jobs:
           name: Test frontend
           command: |
             cd frontend
+            npm i
             npm run test
 
   test-backend:
@@ -92,6 +92,7 @@ jobs:
           name: Test backend
           command: |
             cd backend
+            npm i
             npm run test
 
 #  deploy-infrastructure:

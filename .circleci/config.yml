@@ -45,18 +45,19 @@ jobs:
           command: |
             cd backend
             npm i
-            npm audit fix
+            npm audit --audit-level=critical
+            npm audit fix --audit-level=critical --force
             
   build-frontend:
     docker:
       - image: circleci/node:10.16.3
     steps:
       - checkout
-      - run:
-          name: Install npm
-          command: |
-            cd frontend
-            npm i
+#     - run:
+#         name: Install npm
+#         command: |
+#           cd frontend
+#           npm i
       - run:
           name: Build frontend
           command: |
@@ -68,11 +69,11 @@ jobs:
       - image: circleci/node:10.16.3
     steps:
       - checkout
-      - run:
-          name: Install npm
-          command: |
-            cd backend
-            npm i
+#     - run:
+#         name: Install npm
+#         command: |
+#           cd backend
+#           npm i
       - run:
           name: Build backend
           command: |
@@ -88,8 +89,8 @@ jobs:
           name: Test frontend
           command: |
             cd frontend
-            npm i
-            npm start
+#           npm i
+#           npm start
             npm run test
 
   test-backend:
@@ -101,8 +102,8 @@ jobs:
           name: Test backend
           command: |
             cd backend
-            npm i
-            npm start
+#           npm i
+#           npm start
             npm run test
 
 

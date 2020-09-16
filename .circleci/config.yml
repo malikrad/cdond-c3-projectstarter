@@ -34,8 +34,7 @@ jobs:
             npm i
             npm audit --audit-level=critical
             npm audit fix --audit-level=critical --force
-            npm install --save-dev webpack-dev-server
-            
+        
   analyze-backend:
     docker:
       - image: circleci/node:10.16.3
@@ -58,6 +57,7 @@ jobs:
           name: Build frontend
           command: |
             cd frontend
+            npm i
             npm run build
             
   build-backend:
@@ -69,6 +69,7 @@ jobs:
           name: Build backend
           command: |
             cd backend
+            npm i
             npm run build
 
   test-frontend:

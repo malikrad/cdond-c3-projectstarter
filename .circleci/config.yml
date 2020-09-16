@@ -34,6 +34,7 @@ jobs:
             npm i
             npm audit --audit-level=critical
             npm audit fix --audit-level=critical --force
+            npm install --save-dev webpack-dev-server
             
   analyze-backend:
     docker:

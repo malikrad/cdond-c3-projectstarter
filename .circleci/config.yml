@@ -140,7 +140,7 @@ workflows:
   backend:
     jobs:
       - analyze-backend
-      - build-backend 
+      - build-backend: 
           requires:
             - analyze-backend
       - test-backend:

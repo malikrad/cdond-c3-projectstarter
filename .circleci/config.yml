@@ -130,13 +130,13 @@ workflows:
       
   frontend:
     jobs:
-      - build-frontend
+      - analyze-frontend
+      - build-frontend:
+          requires:
+            - analyze-frontend   
       - test-frontend:
           requires:
-            - build-frontend   
-      - analyze-frontend:
-          requires:
-            - test-frontend
+            - build-frontend
   backend:
     jobs:
       - analyze-backend

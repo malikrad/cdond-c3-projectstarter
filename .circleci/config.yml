@@ -30,7 +30,7 @@ jobs:
       - run:
           name: Analyze frontend
           command: |
-            cd backend
+            cd frontend
             npm i
             npm audit --audit-level=critical
             npm audit fix --audit-level=critical --force

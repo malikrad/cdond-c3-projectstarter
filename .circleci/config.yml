@@ -95,7 +95,33 @@ jobs:
             npm i
             npm run test
 
-#  deploy-infrastructure:
+  deploy-frontend-infra:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Deploy frontend infrastructure
+          command: |
+            aws cloudformation deploy \
+              --stack-name auto_frontend \
+              --template-file .circleci/files/frontend.yml \
+              --region us-east-1 \ 
+              --parameter "ID=1"
+
+  deploy-backend-infra:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Deploy backend infrastructure
+          command: |
+            aws cloudformation deploy \
+              --stack-name auto_backend \
+              --template-file .circleci/files/backend.yml \
+              --region us-east-1 \
+              --parameter "ID=1"
 
 #  configure-infrastructure:
 
@@ -123,6 +149,10 @@ workflows:
       - test-frontend:
           requires:
             - build-frontend
+      - deploy-frontend-infra:
+          requires:
+            - test-frontend
+            
   backend:
     jobs:
       - analyze-backend
@@ -132,4 +162,7 @@ workflows:
       - test-backend:
           requires:
             - build-backend
+      - deploy-backend-infra:
+          requires:
+            - test-backend
 

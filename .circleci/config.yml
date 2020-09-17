@@ -104,7 +104,7 @@ jobs:
           name: Deploy frontend infrastructure
           command: |
             aws cloudformation deploy \
-              --stack-name auto_frontend \
+              --stack-name autofrontenduda \
               --template-body file://.circleci/files/frontend.yml \
               --region us-east-1 \ 
               --parameter-overrides "ID=${WorkflowID}"
@@ -118,7 +118,7 @@ jobs:
           name: Deploy backend infrastructure
           command: |
             aws cloudformation deploy \
-              --stack-name auto_backend \
+              --stack-name autobackenduda \
               --template-body file://.circleci/files/backend.yml \
               --region us-east-1 \
               --parameter-overrides "ID=${WorkflowID}"

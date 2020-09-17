@@ -103,12 +103,11 @@ jobs:
       - run:
           name: Deploy frontend infrastructure
           command: |
-            aws cloudformation deploy \
+            aws cloudformation create \
               --stack-name autofrontenduda \
               --template-body file://./.circleci/files/frontend.yml \
               --region us-east-1 
-              #--parameter-overrides "ID=${WorkflowID}"
-
+           
   deploy-backend-infra:
     docker:
       - image: amazon/aws-cli
@@ -117,12 +116,11 @@ jobs:
       - run:
           name: Deploy backend infrastructure
           command: |
-            aws cloudformation deploy \
+            aws cloudformation create \
               --stack-name autobackenduda \
               --template-body file://./.circleci/files/backend.yml \
               --region us-east-1 
-              #--parameter-overrides "ID=${WorkflowID}"
-
+        
 #  configure-infrastructure:
 
 #  run-migrations:

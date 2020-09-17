@@ -107,7 +107,7 @@ jobs:
               --stack-name autofrontenduda \
               --template-body file://./.circleci/files/frontend.yml \
               --region us-east-1 
-              --parameter-overrides "ID=${WorkflowID}"
+              --parameter-overrides "ID=${CIRCLE_WORKFLOW_ID}"
            
   deploy-backend-infra:
     docker:
@@ -121,7 +121,7 @@ jobs:
               --stack-name autobackenduda \
               --template-body file://./.circleci/files/backend.yml \
               --region us-east-1 
-              --parameter-overrides "ID=${WorkflowID}"
+              --parameter-overrides "ID=${CIRCLE_WORKFLOW_ID}"
         
 #  configure-infrastructure:
 

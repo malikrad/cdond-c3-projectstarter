@@ -103,7 +103,7 @@ jobs:
       - run:
           name: Deploy frontend infrastructure
           command: |
-            aws cloudformation create \
+            aws cloudformation create-stack \
               --stack-name autofrontenduda \
               --template-body file://./.circleci/files/frontend.yml \
               --region us-east-1 
@@ -116,7 +116,7 @@ jobs:
       - run:
           name: Deploy backend infrastructure
           command: |
-            aws cloudformation create \
+            aws cloudformation create-stack \
               --stack-name autobackenduda \
               --template-body file://./.circleci/files/backend.yml \
               --region us-east-1 

@@ -107,7 +107,6 @@ jobs:
               --stack-name autofrontenduda \
               --template-body file://./.circleci/files/frontend.yml \
               --region us-east-1 
-              --parameter-override ID="1"
            
   deploy-backend-infra:
     docker:
@@ -121,7 +120,7 @@ jobs:
               --stack-name autobackenduda \
               --template-body file://./.circleci/files/backend.yml \
               --region us-east-1 
-              --parameter-override ID="1"
+              
         
 #  configure-infrastructure:
 

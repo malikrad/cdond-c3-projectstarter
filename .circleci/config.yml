@@ -139,14 +139,15 @@ jobs:
           command: |
             cd .circleci/ansible
             echo "[all]" > inventory
-            $(aws ec2 --region us-east-1 describe-instances \
+            inv_ip=$(aws ec2 --region us-east-1 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --output text) >> inventory
+              --output text)
+            echo $inv_ip > inventory
       - run:
           name: "Configure ubuntu server"
           command: |
             cd .circleci/ansible \
-            ansible-playbook -i inventory.txt main.yml			
+            ansible-playbook -i inventory main.yml			
 
 #  run-migrations:
 

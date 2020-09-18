@@ -142,9 +142,8 @@ jobs:
       - run:
           name: "Configure ubuntu server"
           command: |
-            cd .circleci/ansible
-            ansible-playbook -i inventory.txt main.yml
-			
+            cd .circleci/ansible \
+            ansible-playbook -i inventory.txt main.yml			
 
 #  run-migrations:
 

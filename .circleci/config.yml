@@ -138,10 +138,10 @@ jobs:
           name: "Save IP address of EC2 instance to inventory file"
           command: |
             cd .circleci/ansible
-            echo "[all]" > inventory.txt
+            echo "[all]" > inventory
             $(aws ec2 --region us-east-1 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --output text) >> inventory.txt
+              --output text) >> inventory
       - run:
           name: "Configure ubuntu server"
           command: |

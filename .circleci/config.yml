@@ -130,7 +130,6 @@ jobs:
           command: |
             apk add --no-cache python py-pip
             pip install awscli
-            echo aws --version
       - run:
           name: "Install dependencies"
           command: |
@@ -143,8 +142,6 @@ jobs:
             $(aws ec2 --region us-east-1 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text) >> inventory.txt
-            pwd
-            cat inventory.txt      
       - run:
           name: "Configure ubuntu server"
           command: |
@@ -169,28 +166,28 @@ workflows:
   frontend:
     jobs:
       - analyze-frontend
-      - build-frontend:
-          requires:
-            - analyze-frontend   
-      - test-frontend:
-          requires:
-            - build-frontend
-      - deploy-frontend-infra:
-          requires:
-            - test-frontend
+      #- build-frontend:
+      #    requires:
+      #      - analyze-frontend   
+      #- test-frontend:
+      #    requires:
+      #      - build-frontend
+      #- deploy-frontend-infra:
+      #    requires:
+      #      - test-frontend
             
   backend:
     jobs:
-      - analyze-backend
-      - build-backend: 
-          requires:
-            - analyze-backend
-      - test-backend:
-          requires:
-            - build-backend
-      - deploy-backend-infra:
-          requires:
-            - test-backend
+      #- analyze-backend
+      #- build-backend: 
+      #    requires:
+      #      - analyze-backend
+      #- test-backend:
+      #    requires:
+      #      - build-backend
+      - deploy-backend-infra
+      #    requires:
+      #     - test-backend
       - config-infra:
           requires:
             - deploy-backend-infra

@@ -188,5 +188,3 @@ workflows:
       - config-infra:
           requires:
             - deploy-backend-infra
-
-  			

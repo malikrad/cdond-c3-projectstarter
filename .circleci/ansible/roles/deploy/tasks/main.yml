@@ -1,0 +1,46 @@
+---
+- name: "update apt packages"
+  become: true
+  become_method: sudo
+  apt:
+    update_cache: yes
+
+- name: "upgrade packages"
+  become: true
+  apt:
+    upgrade: "yes"
+
+- name: "remove dependencies that are no longer required"
+  become: true
+  apt:
+    autoremove: yes
+  
+- name: "Install Python"
+  become: true
+  raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python3)
+  changed_when: false
+- name: Copy files from CircleCI to EC2 server
+  copy:
+    src: /root/project/backend
+    dest: /home/ubuntu
+
+- name: Stop PM2
+  ignore_errors: yes
+  shell: |
+    cd /home/ubuntu/backend
+    pm2 stop backend
+    pm2 delete backend
+- name: Install node dependencies
+  shell: |
+    cd /home/ubuntu/backend    
+    npm install 
+- name: Build node service
+  shell: |
+    cd /home/ubuntu/backend
+    npm run build
+    
+#- name: Run node migrations and save to memstash.io
+  #shell: |
+    #cd /home/ubuntu/backend
+    #npm run migrations > migrations.txt
+    #curl -H "Content-Type: text/plain" -H "token: e13a6cc4-3f08-4da7-9177-216b218d0341" --request PUT --data $( grep -c "No migrations are pending" migrations.txt ) https://api.memstash.io/values/migration_status

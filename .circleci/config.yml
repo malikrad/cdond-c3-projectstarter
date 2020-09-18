@@ -204,7 +204,7 @@ workflows:
       - deploy-frontend-infra:
           requires:
             - test-frontend
-      - config-infra-frontend
+      - config-infra-frontend:
           requires:
             - deploy-frontend-infra
             

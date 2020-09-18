@@ -118,7 +118,30 @@ jobs:
               --template-body file://./.circleci/files/backend.yml \
               --region us-east-1 
               
-  config-infra:
+  config-infra-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - install_awscli_node
+      - run:
+          name: "Build Front-End"
+          command: |
+            API_HOST=$(aws ec2 --region us-east-1 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text)
+            echo $API_HOST
+            cd frontend
+            export API_URL=http://$API_HOST:3030
+            echo $API_URL
+            npm install
+            npm run build
+      - run:
+          name: "Copying the FrontEnd files to S3"
+          command: |
+            aws s3 cp frontend/dist s3://udapeople-udastackid/ --recursive  
+  
+  config-infra-backend:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -167,28 +190,28 @@ workflows:
   frontend:
     jobs:
       - analyze-frontend
-      #- build-frontend:
-      #    requires:
-      #      - analyze-frontend   
-      #- test-frontend:
-      #    requires:
-      #      - build-frontend
-      #- deploy-frontend-infra:
-      #    requires:
-      #      - test-frontend
+      - build-frontend:
+          requires:
+            - analyze-frontend   
+      - test-frontend:
+          requires:
+            - build-frontend
+      - deploy-frontend-infra:
+          requires:
+            - test-frontend
             
   backend:
     jobs:
-      #- analyze-backend
-      #- build-backend: 
-      #    requires:
-      #      - analyze-backend
-      #- test-backend:
-      #    requires:
-      #      - build-backend
-      - deploy-backend-infra
-      #    requires:
-      #     - test-backend
-      - config-infra:
+      - analyze-backend
+      - build-backend: 
+          requires:
+            - analyze-backend
+      - test-backend:
+          requires:
+            - build-backend
+      - deploy-backend-infra:
+          requires:
+           - test-backend
+      - config-infra-backend:
           requires:
             - deploy-backend-infra

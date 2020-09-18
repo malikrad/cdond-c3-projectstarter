@@ -21,7 +21,6 @@ jobs:
           name: Say Hello
           command: |
             echo "Hello World"
-
   analyze-frontend:
     docker:
       - image: circleci/node:10.16.3
@@ -69,7 +68,6 @@ jobs:
             cd backend
             npm i
             npm run build
-
   test-frontend:
     docker:
       - image: circleci/node:10.16.3
@@ -82,7 +80,6 @@ jobs:
             npm i
             npm audit fix --audit-level=critical --force
             npm run test
-
   test-backend:
     docker:
       - image: circleci/node:10.16.3
@@ -94,7 +91,7 @@ jobs:
             cd backend
             npm i
             npm run test
-
+  
   deploy-frontend-infra:
     docker:
       - image: amazon/aws-cli
@@ -121,8 +118,33 @@ jobs:
               --template-body file://./.circleci/files/backend.yml \
               --region us-east-1 
               
-        
-#  configure-infrastructure:
+  config-infra:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
+      - run:
+          name: "Install dependencies"
+          command: |
+            apk add --update ansible
+      - run:
+          name: "Save IP address of EC2 instance to inventory file"
+          command: |
+            cd .circleci/ansible
+            echo "[all]" > inventory.txt
+            $(aws ec2 --region us-east-1 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text) >> inventory.txt
+            pwd
+            cat inventory.txt      
+      - run:
+          name: "Configure ubuntu server"
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt main.yml
+			
 
 #  run-migrations:
 
@@ -164,4 +186,8 @@ workflows:
       - deploy-backend-infra:
           requires:
             - test-backend
+	    - config-infra:
+	        requires:
+		        - deploy-backend-infra
 
+  			

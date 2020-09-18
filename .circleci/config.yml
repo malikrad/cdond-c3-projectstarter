@@ -124,7 +124,13 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
+          fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]  
+      - run:
+          name: "Install AWS CLI to get EC2 endpoints"
+          command: |
+            apk add --no-cache python py-pip
+            pip install awscli
+            echo aws --version
       - run:
           name: "Install dependencies"
           command: |

@@ -185,8 +185,8 @@ workflows:
       - deploy-backend-infra:
           requires:
             - test-backend
-	    - config-infra:
-	        requires:
-		        - deploy-backend-infra
+      - config-infra:
+          requires:
+            - deploy-backend-infra
 
   			

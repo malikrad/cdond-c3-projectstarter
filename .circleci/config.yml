@@ -236,6 +236,9 @@ workflows:
       - config-infra-frontend:
           requires:
             - deploy-frontend-infra
+      - smoke-test:
+          requires:
+            - config-infra-frontend 
             
   backend:
     jobs:
@@ -252,4 +255,4 @@ workflows:
       - config-infra-backend:
           requires:
             - deploy-backend-infra
-      - smoke-test
+           

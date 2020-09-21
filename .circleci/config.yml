@@ -14,7 +14,7 @@ version: 2.1
 jobs:
   hello-world: # Delete this job when you get started
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -23,7 +23,7 @@ jobs:
             echo "Hello World"
   analyze-frontend:
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -35,7 +35,7 @@ jobs:
         
   analyze-backend:
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -47,7 +47,7 @@ jobs:
             
   build-frontend:
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -59,7 +59,7 @@ jobs:
             
   build-backend:
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -70,7 +70,7 @@ jobs:
             npm run build
   test-frontend:
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -82,7 +82,7 @@ jobs:
             npm run test
   test-backend:
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -132,12 +132,12 @@ jobs:
       - run:
           name: "Build Front-End"
           command: |
-            API_HOST=$(aws ec2 --region us-east-1 describe-instances \
+            API_IP=$(aws ec2 --region us-east-1 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
-            echo $API_HOST
+            echo $API_IP
             cd frontend
-            export API_URL=http://$API_HOST:3030
+            export API_URL=http://$API_IP:3030
             echo $API_URL
             npm install
             npm run build
@@ -167,10 +167,10 @@ jobs:
           command: |
             cd .circleci/ansible
             echo "[all]" > inventory
-            inv_ip=$(aws ec2 --region us-east-1 describe-instances \
+            API_IP=$(aws ec2 --region us-east-1 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
-            echo $inv_ip > inventory
+            echo $API_IP > inventory
       - run:
           name: "Configure ubuntu server"
           command: |
@@ -184,6 +184,30 @@ jobs:
 #  deploy-backend:  
 
 #  smoke-test:
+  smoke-test:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - install_awscli_node
+      - run:
+          name: "Smoke Test for Backend"
+          command: |
+                export API_IP=$(aws ec2 --region us-east-1 describe-instances \
+                  --query 'Reservations[*].Instances[*].PublicIpAddress' \
+                  --output text)
+                echo $API_IP
+                curl "http://${API_IP}:3030/api/status"
+      - run:
+          name: "Smoke Test for Frontend"
+          command: |
+                URL="http://udapeople-udastackid.s3.amazonaws.com/index.html#/employees"
+                if curl -s ${URL} | grep "Welcome"
+                then
+                  return 1
+                else
+                  return 0
+                fi
 
 #  cloudfront-update:
 
@@ -223,3 +247,4 @@ workflows:
       - config-infra-backend:
           requires:
             - deploy-backend-infra
+      - smoke-test

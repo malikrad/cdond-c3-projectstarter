@@ -111,7 +111,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Deploy backend infrastructure
+          name: Deploy network infra 
+          command: |
+            aws cloudformation create-stack \
+              --stack-name autonetworkuda
+              --template-file ./.circleci/files/network.yml \
+              --region us-east-1
+      - run:
+          name: Deploy backend infra
           command: |
             aws cloudformation create-stack \
               --stack-name autobackenduda \

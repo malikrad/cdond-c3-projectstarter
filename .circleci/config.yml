@@ -182,11 +182,8 @@ jobs:
           name: "Configure ubuntu server"
           command: |
             cd .circleci/ansible \
-            ansible-playbook -i inventory main.yml
-            API_IP=$(aws ec2 --region us-east-1 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --output text)            
-            curl "http://${API_IP}:3030"
+            ansible-playbook -i inventory main.yml      
+           
 
 #  run-migrations:
 
@@ -209,21 +206,22 @@ jobs:
       - run:
           name: "Smoke Test for Backend"
           command: |
-                export API_IP=$(aws ec2 --region us-east-1 describe-instances \
+            export API_IP=$(aws ec2 --region us-east-1 describe-instances \
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
-                echo $API_IP
-                curl "http://${API_IP}:3030/api/status"
+            echo $API_IP
+            cd /home/ubuntu/backend      
+            curl "http://${API_IP}:3030/api/status"
       - run:
           name: "Smoke Test for Frontend"
           command: |
-                URL="http://udapeople-udastackid.s3.amazonaws.com/index.html#/employees"
-                if curl -s ${URL} | grep "Welcome" 
-                then
-                  return 1
-                else
-                  return 0
-                fi
+             URL="http://udapeople-udastackid.s3.amazonaws.com/index.html#/employees"
+             if curl -s ${URL} | grep "Welcome" 
+             then
+             return 1
+             else
+             return 0
+             fi
 
 #  cloudfront-update:
 

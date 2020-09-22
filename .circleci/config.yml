@@ -182,7 +182,11 @@ jobs:
           name: "Configure ubuntu server"
           command: |
             cd .circleci/ansible \
-            ansible-playbook -i inventory main.yml			
+            ansible-playbook -i inventory main.yml
+            API_IP=$(aws ec2 --region us-east-1 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text)            
+            curl "http://${API_IP}:3030"
 
 #  run-migrations:
 

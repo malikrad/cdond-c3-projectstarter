@@ -194,7 +194,7 @@ jobs:
 #  smoke-test:
   smoke-test:
     docker:
-      - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - run:
@@ -204,6 +204,11 @@ jobs:
             unzip awscliv2.zip
             sudo ./aws/install
       - run:
+          name: "Install utilities"
+          command: |
+            apk add --no-cache curl
+            apk add --no-cache --upgrade bash
+      - run:
           name: "Smoke Test for Backend"
           command: |
             export API_IP=$(aws ec2 --region us-east-1 describe-instances \
@@ -211,16 +216,21 @@ jobs:
                   --output text)
             echo $API_IP
             cd /home/ubuntu/backend      
-            curl "http://${API_IP}:3030/api/status"
+            if curl -s "http://${API_IP}:3030/api/status" | grep "ok"
+            then
+              return 1
+            else
+              return 0
+            fi
       - run:
           name: "Smoke Test for Frontend"
           command: |
              URL="http://udapeople-udastackid.s3.amazonaws.com/index.html#/employees"
              if curl -s ${URL} | grep "Welcome" 
              then
-             return 1
+               return 1
              else
-             return 0
+               return 0
              fi
 
 #  cloudfront-update:

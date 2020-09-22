@@ -222,9 +222,9 @@ jobs:
              URL="http://udapeople-udastackid.s3.amazonaws.com/index.html#/employees"
              if curl -s ${URL} | grep "Welcome" 
              then
-               return 1
-             else
                return 0
+             else
+               return 1
              fi
 
 #  cloudfront-update:

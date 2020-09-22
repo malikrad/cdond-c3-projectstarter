@@ -110,13 +110,13 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - run:
-          name: "Deploy network infra" 
-          command: |
-            aws cloudformation create-stack \
-              --stack-name autonetworkuda \
-              --template-body file://./.circleci/files/network.yml \
-              --region us-east-1
+  #    - run:
+  #       name: "Deploy network infra" 
+  #       command: |
+  #         aws cloudformation create-stack \
+  #            --stack-name autonetworkuda \
+  #            --template-body file://./.circleci/files/network.yml \
+  #            --region us-east-1
       - run:
           name: "Deploy backend infra"
           command: |

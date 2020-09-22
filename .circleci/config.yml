@@ -214,7 +214,7 @@ jobs:
           name: "Smoke Test for Frontend"
           command: |
                 URL="http://udapeople-udastackid.s3.amazonaws.com/index.html#/employees"
-                if curl -s ${URL} | grep "Welcome"
+                if curl -s ${URL} | grep "Welcome" 
                 then
                   return 1
                 else

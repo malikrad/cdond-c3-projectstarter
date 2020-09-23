@@ -220,13 +220,11 @@ jobs:
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
             echo $API_IP
-            curl "http://${API_IP}:3030"
-            curl "http://${API_IP}:3030/api/status"
             if curl -s "http://${API_IP}:3030/api/status" | grep "ok"
             then
-              return 0
-            else
               return 1
+            else
+              return 0
             fi
 
 #  cloudfront-update:

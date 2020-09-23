@@ -258,9 +258,9 @@ jobs:
             echo $API_IP
             if curl -s "http://${API_IP}:3030/api/status" | grep "ok"
             then
-              return 1
-            else
               return 0
+            else
+              return 1
             fi
       - revert-migration
       - destroy-aws-resource

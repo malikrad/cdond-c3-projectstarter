@@ -252,6 +252,7 @@ jobs:
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
             echo $API_IP
+            print urllib.urlopen("http://$API_IP:3030/api/status").getcode()
             if curl -s "http://${API_IP}:3030/api/status" | grep "ok"
             then
               return 0

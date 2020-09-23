@@ -252,7 +252,8 @@ jobs:
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
             echo $API_IP
-            print urllib.urlopen("http://$API_IP:3030/api/status").getcode()
+            export Instance_ID=$(aws ec2 --query 'Reservations[*].Instances[*].Instance.InstanceId)
+            aws ec2 describe-instance-status --instance-id $Instance_ID
             if curl -s "http://${API_IP}:3030/api/status" | grep "ok"
             then
               return 0

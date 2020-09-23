@@ -2,14 +2,47 @@ version: 2.1
 
 ### It's a good practice to keep your commands at the top of the config file. In this project, you'll need at least 2 commands:
 
-# commands:
-#   destroy-environment:
-#     description: Destroy backend and frontend cloudformation stacks given a workflow ID.
-#     ...
+commands:
+  destroy-aws-resource:
+    description: Destroy all cloudformation stacks given a workflow ID.
+    steps:
+      - run:
+          name: Delete all files in the current S3 bucket
+          command: |
+            if aws s3api head-bucket --bucket udapeople-udastackid
+            then
+              aws s3 rm s3://udapeople-udastackid/ --recursive
+            fi
+          when: on_fail
+      - run:
+          name: Delete the current AWS CloudFormation stacks
+          command: |
+            aws cloudformation delete-stack --stack-name autofrontenduda
+            aws cloudformation delete-stack --stack-name autobackenduda
+          when: on_fail
 
-#   revert-migration:
-#     description: Revert the last migration if successfully run in the current workflow. 
-#     ...
+  revert-migration:
+    description: Revert the last migration if successfully run in the current workflow
+    steps:
+      - run:
+          name: Get the hostname of EC2 instance from https://memstash.io/
+          command: |
+            HOST_NAME=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/host_name)
+            echo ${HOST_NAME}
+            cd .circleci/ansible/
+            echo "[all]" > ./inventory
+            echo ${HOST_NAME} >> ./inventory
+            cat ./inventory
+          when: on_fail
+      - add_ssh_keys:
+          fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
+      - run:
+          name: Revert the last migration
+          command: |
+            printenv >> ./backend/.env
+            cd .circleci/ansible/
+            ansible-playbook -i ./inventory dbmigration_rollback.yml
+          when: on_fail
 
 jobs:
   hello-world: # Delete this job when you get started
@@ -124,6 +157,16 @@ jobs:
               --stack-name autobackenduda \
               --template-body file://./.circleci/files/backend.yml \
               --region us-east-1 
+       - run:
+          name: Save the URL of EC2 instance to https://memstash.io/
+          command: |
+            HOST_NAME=$(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[0].PublicDnsName" --output text)
+            echo ${HOST_NAME}
+            curl -H "Content-Type: text/plain" \
+               -H "token: ${CIRCLE_WORKFLOW_ID}" \
+               --request PUT \
+               --data ${HOST_NAME} \
+               https://api.memstash.io/values/host_name 
               
   config-infra-frontend:
     docker:

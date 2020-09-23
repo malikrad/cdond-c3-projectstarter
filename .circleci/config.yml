@@ -155,7 +155,7 @@ jobs:
           command: |
             HOST_NAME=$(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[0].PublicDnsName" --output text)
             echo ${HOST_NAME}
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data ${HOST_NAME}  https://api.memstash.io/values/host_name 
+           #curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data ${HOST_NAME}  https://api.memstash.io/values/host_name 
               
   config-infra-frontend:
     docker:

@@ -144,13 +144,13 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "Deploy backend infra"
-          command: |
-            aws cloudformation create-stack \
-              --stack-name autobackenduda \
-              --template-body file://./.circleci/files/backend.yml \
-              --region us-east-1 
-       - run:
+         name: "Deploy backend infra"
+         command: |
+           aws cloudformation create-stack \
+             --stack-name autobackenduda \
+             --template-body file://./.circleci/files/backend.yml \
+             --region us-east-1 
+      - run:
           name: Save the URL of EC2 instance to https://memstash.io/
           command: |
             HOST_NAME=$(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[0].PublicDnsName" --output text)

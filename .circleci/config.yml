@@ -262,6 +262,8 @@ jobs:
             else
               return 0
             fi
+      - revert-migration
+      - destroy-aws-resource
 
 #  cloudfront-update:
 

@@ -252,7 +252,7 @@ jobs:
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
             echo $API_IP
-            export Instance_ID=$(aws ec2 --query 'Reservations[*].Instances[*].InstanceId --output text)
+            export Instance_ID=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].InstanceId --output text)
             echo $Instance_ID
             export Status=$(aws ec2 describe-instance-status --instance-id $Instance_ID --output text)
             echo $Status

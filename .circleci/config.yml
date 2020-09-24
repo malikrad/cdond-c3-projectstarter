@@ -176,7 +176,7 @@ jobs:
             then
               curl --request GET https://api.memstash.io/values/migration
             fi
-      - destroy-envinroment
+      - destroy-environment
 
   deploy-frontend:
     docker:

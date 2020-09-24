@@ -1,51 +1,35 @@
 ---
-#- name: "update apt packages"
-#  become: true
-#  become_method: sudo
-#  apt:
-#    update_cache: yes
+- name: "Upgrade packages"
+  become: true
+  apt:
+    upgrade: "yes"
 
-#- name: "upgrade packages"
-#  become: true
-#  apt:
-#    upgrade: "yes"
+- name: "Install dependencies"
+  become: true
+  apt:
+    name: ["nodejs", "npm", "tar"]
+    state: latest
+    update_cache: yes
 
-  
-#- name: "Install Python"
-#  become: true
-#  raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python3)
-# changed_when: false
-#- name: Copy files from CircleCI to EC2 server
-#  copy:
-#    src: /root/project/backend
-#    dest: /home/ubuntu
+- name: "Copy dist files"
+  become: true:
+  copy:
+    src: files/backend_artifact.tar.gz
+    dest: ./dist
 
-#- name: "Stop PM2"
-#  ignore_errors: yes
-# shell: |
-#   cd /home/ubuntu/backend
-#  pm2 stop backend
-#    pm2 delete backend
-- name: Install node dependencies
+- name: "Unpack dist files"
+become: trues
+shell: |
+  cd dist
+  tar -xzf backend_artifact.tar.gz
+  rm backend_artifact.tar.gz
+
+- name: Delete old pm2 process
+  become: true
+  command: pm2 delete app
+  ignore_errors: yes
+
+- name: Executing node
+  become: true
   shell: |
-    cd /home/ubuntu/backend    
-    npm install 
-    npm run build
-    
-- name: "Run node migrations and save to https://memstash.io/"
-  shell: |
-    cd /home/ubuntu/backend
-    npm run migrations > migrations.txt
-    cat migrations.txt
-    export CIRCLE_WORKFLOW_ID="{{ CIRCLE_WORKFLOW_ID }}"
-    echo CIRCLE_WORKFLOW_ID=${CIRCLE_WORKFLOW_ID}
-    curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data $( grep -c "No migrations are pending" migrations.txt ) https://api.memstash.io/values/dbmigration_status
-  register: migration_output
-  
-- debug:
-    msg: "{{ migration_output.stdout_lines }}"
-
-- name: "use pm2 to run the node server"
-  shell: |
-    cd /home/ubuntu/backend
-    pm2 start npm --run "start:dev"
+    pm2 start -x -i 4 --name "app" ./dist/main.js

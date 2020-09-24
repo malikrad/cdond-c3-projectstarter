@@ -58,10 +58,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Test Frontend Code
+          name: Test frontend
           command: |
             cd frontend
             npm i
+            npm audit fix --audit-level=critical --force
             npm run test
             
   test-backend:

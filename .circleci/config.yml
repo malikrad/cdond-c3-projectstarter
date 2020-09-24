@@ -191,31 +191,32 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
-      - add_ssh_keys:
-          fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]  
       - run:
-          name: "Install AWS CLI to get EC2 endpoints"
+          name: Install system dependencies
           command: |
-            apk add --no-cache python py-pip
-            pip install awscli
-      - run:
-          name: "Install dependencies"
-          command: |
-            apk add --update ansible
+            apk add --no-cache curl
+            apk add --no-cache --upgrade bash
+            apk add --no-cache --update ansible
+            apk add --no-cache openssh-client
+            pip3 install awscli
       - run:
           name: "Save IP address of EC2 instance to inventory file"
           command: |
-            cd .circleci/ansible
-            echo "[all]" > inventory
+            cd .circleci/ansible/
             API_IP=$(aws ec2 --region us-east-1 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
-            echo $API_IP > inventory
+            echo $API_IP
+            echo $API_IP > ./inventory
+            cat ./inventory
+      - add_ssh_keys:
+          fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"] 
       - run:
           name: "Configure ubuntu server"
           command: |
+            printenv >> ./backend/.env
             cd .circleci/ansible \
-            ansible-playbook -i inventory main.yml      
+            ansible-playbook -i ./inventory main.yml      
            
 
 #  run-migrations:

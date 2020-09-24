@@ -253,7 +253,9 @@ jobs:
                   --output text)
             echo $API_IP
             export Instance_ID=$(aws ec2 --query 'Reservations[*].Instances[*].Instance.InstanceId)
-            aws ec2 describe-instance-status --instance-id $Instance_ID
+            echo $Instance_ID
+            export Status=$(aws ec2 describe-instance-status --instance-id $Instance_ID)
+            echo $Status
             if curl -s "http://${API_IP}:3030/api/status" | grep "ok"
             then
               return 0

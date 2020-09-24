@@ -42,7 +42,7 @@
     curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data $( grep -c "No migrations are pending" migrations.txt ) https://api.memstash.io/values/dbmigration_status
   register: migration_output
   
-  - debug:
+ - debug:
     msg: "{{ migration_output.stdout_lines }}"
 
 - name: "use pm2 to run the node server"

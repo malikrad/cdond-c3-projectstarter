@@ -129,7 +129,7 @@ jobs:
               --tags project=udaPeople
               ARN=$(aws s3 ls | grep udapeople)
               echo "ARN=$ARN"
-              curl -H "Content-Type: text/plain" -H "token: 97jm1945-45k1-4b71-896f-c1i276462430"" --request PUT --data "" https://api.memstash.io/values/arn_${CIRCLE_WORKFLOW_ID}
+              curl -H "Content-Type: text/plain" -H "token: 97jm1945-45k1-4b71-896f-c1i276462430"" --request PUT --data "https://api.memstash.io/values/arn_${CIRCLE_WORKFLOW_ID}"
       - destroy-environment
 
   configure-infrastructure:

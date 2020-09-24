@@ -143,6 +143,7 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
+      - run: yum -y install tar gzip
       - run:
          name: "Deploy backend infra"
          command: |
@@ -198,6 +199,7 @@ jobs:
             apk add --no-cache --upgrade bash
             apk add --no-cache --update ansible
             apk add --no-cache openssh-client
+            apk add --update tar gzip nodejs npm
             pip3 install awscli
       - run:
           name: "Save IP address of EC2 instance to inventory file"
@@ -212,14 +214,26 @@ jobs:
       - add_ssh_keys:
           fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"] 
       - run:
-          name: "Configure ubuntu server"
+          name: Build and deploy backend
           command: |
-            printenv >> ./backend/.env
-            cd .circleci/ansible \
-            ansible-playbook -i ./inventory main.yml      
+            cd backend
+            npm i
+            npm run build
+            cd ../.circleci/ansible
+            ansible-playbook -i inventory.txt main.yml     
            
 
-#  run-migrations:
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm install
+            npm run migrations
 
 #  deploy-frontend:
 
@@ -289,6 +303,9 @@ workflows:
       - config-infra-frontend:
           requires:
             - deploy-frontend-infra
+      - run-migrations:
+          requires:
+            -config-infra-frontend
       - smoke-test:
           requires:
             - config-infra-frontend 

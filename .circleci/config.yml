@@ -305,10 +305,10 @@ workflows:
             - deploy-frontend-infra
       - run-migrations:
           requires:
-            -config-infra-frontend
+            - config-infra-frontend
       - smoke-test:
           requires:
-            - config-infra-frontend 
+            - run-migrations 
             
   backend:
     jobs:

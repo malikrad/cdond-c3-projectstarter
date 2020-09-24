@@ -252,15 +252,15 @@ jobs:
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
             echo $API_IP
-            export Instance_ID=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].InstanceId --output text)
+            export Instance_ID=$(aws ec2 --region us-east-1 describe-instances --query 'Reservations[*].Instances[*].InstanceId --output text)
             echo $Instance_ID
             export Status=$(aws ec2 describe-instance-status --instance-id $Instance_ID --output text)
             echo $Status
             if curl -s "http://${API_IP}:3030/api/status" | grep "ok"
             then
-              return 0
-            else
               return 1
+            else
+              return 0
             fi
       - revert-migration
       - destroy-aws-resource

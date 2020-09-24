@@ -159,15 +159,16 @@ jobs:
               
   config-infra-frontend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - run:
-          name: "Install AWS CLI in the node container"
+          name: "Install system dependencies"
           command: |
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
+            apk add --no-cache curl
+            apk add --no-cache --upgrade bash
+            apk add --no-cache --update npm
+            pip3 install awscli
       - run:
           name: "Build Front-End"
           command: |
@@ -177,13 +178,14 @@ jobs:
             echo $API_IP
             cd frontend
             export API_URL=http://$API_IP:3030
-            echo $API_URL
+            echo API_URL=$API_URL
+            cd frontend
             npm install
             npm run build
       - run:
           name: "Copying the FrontEnd files to S3"
           command: |
-            aws s3 cp frontend/dist s3://udapeople-udastackid/ --recursive  
+            aws s3 cp ./frontend/dist s3://udapeople-udastackid/ --recursive  
   
   config-infra-backend:
     docker:

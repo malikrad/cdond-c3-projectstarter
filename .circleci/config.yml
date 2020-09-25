@@ -11,7 +11,7 @@ commands:
           command: |
             if aws s3api head-bucket --bucket udapeople-udastackid
             then
-              aws s3 rm s3://udapeoplefrontend${CIRCLE_WORKFLOW_ID}/ --recursive
+              aws s3 rm s3://udapeople-frontend-${CIRCLE_WORKFLOW_ID}/ --recursive
             fi
           when: on_fail
       - run:
@@ -277,9 +277,14 @@ jobs:
             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text)
-            curl "http://${BACKEND_IP}:3030/api/status"
+            echo $(BACKEND_IP)
+            if curl -s "http://${BACKEND_IP}:3030/api/status" | grep "Ok"
+            then
+              return 1
+            else
+              return 0
       - run:
-          name: Smoke test backend
+          name: Smoke test frontend
           command: |
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-1.amazonaws.com/#/employees"
             if curl -s ${URL} | grep "Welcome"

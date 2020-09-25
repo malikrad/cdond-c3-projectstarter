@@ -9,7 +9,7 @@ commands:
       - run:
           name: Delete all files in the current S3 bucket
           command: |
-            if aws s3api head-bucket --bucket udapeople-udastackid
+            if aws s3api head-bucket --bucket udapeople-${CIRCLE_WORKFLOW_ID}
             then
               aws s3 rm s3://udapeople-frontend-${CIRCLE_WORKFLOW_ID}/ --recursive
             fi
@@ -89,7 +89,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Audit Frontend Dependencies
+          name: Analyze and resolve frontend dependencies
           command: |
             cd frontend
             npm i
@@ -101,7 +101,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Audit Backend Dependencies
+          name: Analyze and resolve backend dependencies
           command: |
             cd backend
             npm i
@@ -255,9 +255,10 @@ jobs:
           name: Set up inventory file
           command: |
             cd .circleci/ansible
-            echo [web] >> inventory.txt
-            URLS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID})
-            echo "$URLS" >> inventory.txt
+            echo [all] >> ./inventory
+            export HOST_NAME=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/HOST_NAME
+            echo ${HOST_NAME} >> ./inventory
+            
       - run:
           name: Build and deploy backend
           command: |
@@ -265,7 +266,7 @@ jobs:
             npm i
             npm run build
             cd ../.circleci/ansible
-            ansible-playbook -i inventory.txt cdmain.yml
+            ansible-playbook -i inventory main.yml
       - destroy-environment
       - revert-migration
 

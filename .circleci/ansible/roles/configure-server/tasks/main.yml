@@ -18,7 +18,4 @@
     src: /root/project/backend
     dest: /home/ubuntu
 
-- name: "install package dependencies"
-  shell: |
-    cd /home/ubuntu/backend    
-    npm install 
+

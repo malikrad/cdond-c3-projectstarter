@@ -4,29 +4,9 @@
   apt:
     upgrade: "yes"
 
-- name: "Install dependencies"
-  become: true
-  apt:
-    name: ["nodejs", "npm", "tar"]
-    state: latest
-    update_cache: yes
-
-- name: "run migrations and save status to https://memstash.io/"
-  shell: |
-    cd /home/ubuntu/backend
-    npm run migrations > migrations.txt
-    cat migrations.txt
-    export CIRCLE_WORKFLOW_ID="{{ CIRCLE_WORKFLOW_ID }}"
-    echo CIRCLE_WORKFLOW_ID=${CIRCLE_WORKFLOW_ID}
-    curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data $( grep -c "No migrations are pending" migrations.txt ) https://api.memstash.io/values/migration_status
-  register: migration_output
-
-- debug:
-    msg: "{{ migration_output.stdout_lines }}"
-
 - name: Executing node
   become: true
   shell: |
     pm2 start npm -- run "start:dev"
-    pm2 start -x --name "app" ./dist/main.js
+  #  pm2 start -x --name "app" ./dist/main.js
 

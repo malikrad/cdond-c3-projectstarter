@@ -9,7 +9,7 @@ commands:
       - run:
           name: Delete all files in the current S3 bucket
           command: |
-            if aws s3api head-bucket --bucket udapeople-${CIRCLE_WORKFLOW_ID}
+            if aws s3api head-bucket --bucket udapeople-frontend-${CIRCLE_WORKFLOW_ID}
             then
               aws s3 rm s3://udapeople-frontend-${CIRCLE_WORKFLOW_ID}/ --recursive
             fi
@@ -256,7 +256,7 @@ jobs:
           command: |
             cd .circleci/ansible
             echo [all] >> ./inventory
-            export HOST_NAME=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/HOST_NAME
+            export HOST_NAME=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/HOST_NAME)
             echo ${HOST_NAME} >> ./inventory
             
       - run:

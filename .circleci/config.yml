@@ -279,6 +279,8 @@ jobs:
             APP_URL="http://${BACKEND_IP}:3030/api/status"
             echo "${APP_URL}"
             echo ${APP_URL}
+            curl "${APP_URL}"
+            curl ${APP_URL}
             if curl -s ${APP_URL} | grep "Ok"
             then
               return 1

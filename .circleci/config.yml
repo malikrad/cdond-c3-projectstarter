@@ -274,8 +274,12 @@ jobs:
                   --filters Name=instance-state-name,Values=running \
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
-            echo $(BACKEND_IP)
-            if curl -s "http://${BACKEND_IP}:3030/api/status" | grep "Ok"
+            echo "${BACKEND_IP}"
+            echo ${BACKEND_IP}
+            APP_URL="http://${BACKEND_IP}:3030/api/status"
+            echo "${APP_URL}"
+            echo ${APP_URL}
+            if curl -s ${APP_URL} | grep "Ok"
             then
               return 1
             else

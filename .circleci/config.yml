@@ -253,9 +253,6 @@ jobs:
             cd backend
             npm i
             npm run build
-            tar -C dist -czvf backend_artifact.tar.gz .
-            mkdir -p ../.circleci/ansible/roles/deploy/files
-            mv backend_artifact.tar.gz ../.circleci/ansible/roles/deploy/files/
             cd ../.circleci/ansible
             ansible-playbook -i inventory.txt cdmain.yml
       - destroy-environment
@@ -274,7 +271,7 @@ jobs:
           name: Smoke test backend
           command: |
             BACKEND_IP=$(aws ec2 describe-instances \
-            --filters Name=instance-state-name,Values=running \
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text)
             echo $(BACKEND_IP)
@@ -287,7 +284,7 @@ jobs:
       - run:
           name: Smoke test frontend
           command: |
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-1.amazonaws.com/#/employees"
+            URL="http://udapeople-frontend-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-1.amazonaws.com/#/employees"
             if curl -s ${URL} | grep "Welcome"
             then
               return 0

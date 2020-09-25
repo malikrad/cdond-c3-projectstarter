@@ -149,26 +149,29 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
-      - add_ssh_keys:
-          fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
       - run:
           name: Install dependencies
           command: |
             apk add --update tar gzip ansible nodejs npm curl
+            apk add --no-cache openssh-client
+            apk add --no-cache --upgrade bash
             pip install awscli
+      - add_ssh_keys:
+          fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
       - run:
           name: Set up inventory file
           command: |
             cd .circleci/ansible
-            echo [web] > inventory.txt
-            URLS=$(curl --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID})
-            echo "$URLS" >> inventory.txt
-            cat inventory.txt
+            echo "[all]" > ./inventory
+            export HOST_NAME=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/host_name) 
+            echo ${HOST_NAME} >> ./inventory
+            echo "Inventory contents:"
+            cat ./inventory
       - run:
           name: Configure server with ansible
           command: |
             cd .circleci/ansible
-            ansible-playbook -i inventory.txt main.yml
+            ansible-playbook -i ./inventory main.yml
       - destroy-environment
 
   run-migrations:

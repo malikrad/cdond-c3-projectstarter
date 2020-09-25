@@ -11,25 +11,21 @@
     state: latest
     update_cache: yes
 
-- name: "Copy dist files"
-  become: true:
-  copy:
-    src: files/backend_artifact.tar.gz
-    dest: ./dist
+- name: "run migrations and save status to https://memstash.io/"
+  shell: |
+    cd /home/ubuntu/backend
+    npm run migrations > migrations.txt
+    cat migrations.txt
+    export CIRCLE_WORKFLOW_ID="{{ CIRCLE_WORKFLOW_ID }}"
+    echo CIRCLE_WORKFLOW_ID=${CIRCLE_WORKFLOW_ID}
+    curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data $( grep -c "No migrations are pending" migrations.txt ) https://api.memstash.io/values/migration_status
+  register: migration_output
 
-- name: "Unpack dist files"
-become: trues
-shell: |
-  cd dist
-  tar -xzf backend_artifact.tar.gz
-  rm backend_artifact.tar.gz
-
-- name: Delete old pm2 process
-  become: true
-  command: pm2 delete app
-  ignore_errors: yes
+- debug:
+    msg: "{{ migration_output.stdout_lines }}"
 
 - name: Executing node
   become: true
   shell: |
     pm2 start -x -i 4 --name "app" ./dist/main.js
+

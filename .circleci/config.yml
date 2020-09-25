@@ -283,6 +283,7 @@ jobs:
               return 1
             else
               return 0
+            fi
       - run:
           name: Smoke test frontend
           command: |

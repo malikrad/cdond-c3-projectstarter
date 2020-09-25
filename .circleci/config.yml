@@ -271,7 +271,7 @@ jobs:
             cd .circleci/ansible
             ansible-playbook -i ./inventory main.yml
       - destroy-environment
-      - revert-migration
+      - revert-migration 
 
   smoke-test:
     docker:

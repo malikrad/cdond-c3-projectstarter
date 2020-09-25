@@ -214,13 +214,21 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
             export API_URL="http://${BACKEND_IP}:3030"
+            echo "API_URL=$API_URL" >> frontend/.env
             echo "${API_URL}"
       - run:
-          name: Deploy frontend 
+          name: "Baking backend API_URL into the front-end"
           command: |
+            sudo npm install webpack-dev-server -g
             cd frontend
-            npm install
-            npm run build
+            sudo npm i
+            sudo npm run build      
+ #     - run:
+ #         name: Deploy frontend 
+ #         command: |
+ #           cd frontend
+ #           npm install
+ #           npm run build
       - run: 
           name: Copy built frontend files to the S3 bucket
           command: |

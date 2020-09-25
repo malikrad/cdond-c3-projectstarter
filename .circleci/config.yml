@@ -3,14 +3,22 @@ version: 2.1
 ### It's a good practice to keep your commands at the top of the config file. In this project, you'll need at least 2 commands:
 
 commands:
-  destroy-environment:
-    description: Delete backend and frontend cloudformation stacks
+  destroy-aws-resource:
+    description: Destroy all cloudformation stacks given a workflow ID.
     steps:
       - run:
-          name: Destroy environment
+          name: Delete all files in the current S3 bucket
           command: |
-            aws s3 rm "s3://udapeoplefrontend${CIRCLE_WORKFLOW_ID}" --recursive
-            aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID}"
+            if aws s3api head-bucket --bucket udapeople-udastackid
+            then
+              aws s3 rm s3://udapeoplefrontend${CIRCLE_WORKFLOW_ID}/ --recursive
+            fi
+          when: on_fail
+      - run:
+          name: Delete the current AWS CloudFormation stacks
+          command: |
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID}
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID}
           when: on_fail
 
   revert-migration:
@@ -20,13 +28,10 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            SUCCESS=$(curl -H "token: 97jm1945-45k1-4b71-896f-c1i276462430" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID})
-            if (($SUCCESS == 1));
-            then
-              cd ~/project/backend
-              npm install
-              npm run migration:revert
-            fi
+            cd ~/project/backend
+            npm i
+            npm run migration:revert
+
 jobs:
   build-frontend:
     docker:
@@ -193,7 +198,12 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update install tar gzip ansible nodejs npm curl
+            apk add --no-cache curl
+            apk add --no-cache tar
+            apk add --no-cache gzip
+            apk add --no-cache ansible
+            apk add --no-cache nodejs
+            apk add --no-cache npm
             pip install awscli
       - run:
           name: Get backend url
@@ -211,7 +221,7 @@ jobs:
             npm install
             npm run build
             cd dist
-            aws s3 sync . s3://udapeoplefrontend-"${CIRCLE_WORKFLOW_ID}" --delete
+            aws s3 cp frontend/dist s3://udapeoplefrontend-"${CIRCLE_WORKFLOW_ID}" --recursive  
       - destroy-environment
       - revert-migration
 
@@ -232,7 +242,7 @@ jobs:
           command: |
             cd .circleci/ansible
             echo [web] >> inventory.txt
-            URLS=$(curl -H "token: 97jm1945-45k1-4b71-896f-c1i276462430" --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID})
+            URLS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/url_${CIRCLE_WORKFLOW_ID})
             echo "$URLS" >> inventory.txt
       - run:
           name: Build and deploy backend

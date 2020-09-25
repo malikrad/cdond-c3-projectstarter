@@ -31,7 +31,7 @@ commands:
             cd ~/project/backend
             npm i
             npm audit fix --audit-level=critical --force
-            npm run migration:revert
+            npm run migrations:revert
 
 jobs:
   build-frontend:

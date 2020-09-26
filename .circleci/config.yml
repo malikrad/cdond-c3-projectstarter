@@ -281,27 +281,22 @@ jobs:
       - run:
           name: Setup EC2 instance & copy compiled backend to the EC2 instance
           command: |
-            #!/bin/bash
-           # chsh -s /bin/bash $USER
-           #pushd backend || exit
             apk add --update ansible
             apk add --update bash
-        #    ansible-galaxy install weareinteractive.environment
             ansible-playbook -i inventory main.yml
-            popd || exit
- #     - run:
- #         name: Build and deploy backend
- #         command: |
- #           printenv >> ./backend/.env
- #           cd backend
- #           npm i
- #           npm run build            
-   #   - run:
-   #       name: Run Ansible playbook
-   #       command: |
-   #         cd .circleci/ansible
-   #         ansible-playbook -i ./inventory main.yml
-   #         no_output_timeout: 30m
+ #    - run:
+ #        name: Build and deploy backend
+ #        command: |
+ #          printenv >> ./backend/.env
+ #          cd backend
+ #          npm i
+ #          npm run build            
+ #    - run:
+ #        name: Run Ansible playbook
+   #      command: |
+   #        cd .circleci/ansible
+   #        ansible-playbook -i ./inventory main.yml
+   #        no_output_timeout: 30m
       - destroy-environment
       - revert-migration 
 

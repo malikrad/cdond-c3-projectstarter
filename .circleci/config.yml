@@ -274,16 +274,15 @@ jobs:
       - run:
           name: Build backend app
           command: |
-            pushd backend || exit
+            cd backend
             npm i
             npm build
-            popd || exit
       - run:
           name: Setup EC2 instance & copy compiled backend to the EC2 instance
           command: |
             apk add --update ansible
             apk add --update bash
-            ansible-playbook -i inventory main.yml
+            ansible-playbook -i ./inventory main.yml
  #    - run:
  #        name: Build and deploy backend
  #        command: |

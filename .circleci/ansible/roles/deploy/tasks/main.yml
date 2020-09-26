@@ -6,7 +6,7 @@
 
 - name: Executing node
   become: true
-  shell: |
- #   pm2 start npm -- run "start:dev"
+  shell: 
+    cd /home/ubuntu/backend
     pm2 start -x --name "app" ./dist/main.js
 

@@ -220,8 +220,6 @@ jobs:
             echo "API_URL=$API_URL" >> frontend/.env
             echo "${API_URL}"
             echo "AWS_DEFAULT_REGION=us-east-1" >> frontend/.env
-            echo "AWS_ACCESS_KEY_ID=AKIARYWOGL52YX34PL2U" >> frontend/.env
-            echo "AWS_SECRET_ACCESS_KEY=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" >> frontend/.env
             echo "TYPEORM_CONNECTION=postgres" >> frontend/.env
             echo "TYPEORM_DATABASE=postgres" >> frontend/.env
             echo "TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts" >> frontend/.env

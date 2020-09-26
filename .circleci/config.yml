@@ -270,7 +270,7 @@ jobs:
       - run:
           name: Run Ansible playbook
           command: |
-            cd ../.circleci/ansible
+            cd .circleci/ansible
             ansible-playbook -i ./inventory main.yml
             no_output_timeout: 30m
       - destroy-environment

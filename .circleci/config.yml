@@ -267,12 +267,12 @@ jobs:
             cd backend
             npm i
             npm run build            
-      - run:
-          name: Run Ansible playbook
-          command: |
-            cd .circleci/ansible
-            ansible-playbook -i ./inventory main.yml
-            no_output_timeout: 30m
+   #   - run:
+   #       name: Run Ansible playbook
+   #       command: |
+   #         cd .circleci/ansible
+   #         ansible-playbook -i ./inventory main.yml
+   #         no_output_timeout: 30m
       - destroy-environment
       - revert-migration 
 

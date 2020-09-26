@@ -24,6 +24,7 @@ commands:
   revert-migration:
     description: Revert the last migration
     steps:
+      - checkout
       - run:
           name: Revert migrations
           when: on_fail
@@ -256,8 +257,8 @@ jobs:
       - image: sitapati/docker-alpine-python-node
     steps:
       - checkout
- #     - add_ssh_keys:
- #         fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
+      - add_ssh_keys:
+          fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
  #     - run:
  #         name: Set up inventory file
  #         command: |
@@ -267,17 +268,17 @@ jobs:
  #           echo ${HOST_NAME} >> ./inventory
  #           echo "Inventory contents"
  #           cat ./inventory    
-      - run:
-          name: Build backend app
-          command: |
-            cd backend
-            npm i
-            npm build
+ #      - run:
+ #         name: Build backend app
+ #        command: |
+ #         cd backend
+ #           npm i
+ #          npm build
       - run:
           name: Setup EC2 instance & copy compiled backend to the EC2 instance
           command: |
-            apk add --update ansible
-            apk add --update bash
+ #           apk add --update ansible
+ #           apk add --update bash
             cd .circleci/ansible
             ansible-playbook -i ./inventory main.yml
  #    - run:

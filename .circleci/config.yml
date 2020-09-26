@@ -267,7 +267,7 @@ jobs:
             cd backend
             npm i
             npm run build            
-      -run:
+      - run:
           name: Run Ansible playbook
           command: |
             cd ../.circleci/ansible

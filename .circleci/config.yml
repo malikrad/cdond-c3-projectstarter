@@ -256,7 +256,7 @@ jobs:
           command: |
             cd .circleci/ansible
             echo [all] >> ./inventory
-            export HOST_NAME=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/HOST_NAME)
+            export HOST_NAME=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/host_name)
             echo ${HOST_NAME} >> ./inventory
             echo "Inventory contents"
             cat ./inventory

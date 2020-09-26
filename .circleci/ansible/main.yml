@@ -10,14 +10,32 @@
     ansible_stdout_callback: yaml
     ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
     TYPEORM_MIGRATIONS: "{{ lookup('env','TYPEORM_MIGRATIONS') }}"
+    echo "TYPEORM_MIGRATIONS"
+    echo ${TYPEORM_MIGRATIONS}
     TYPEORM_ENTITIES: "{{ lookup('env','TYPEORM_ENTITIES') }}"
+    echo "TYPEORM_ENTITIES"
+    echo ${TYPEORM_ENTITIES}
     TYPEORM_CONNECTION: "{{ lookup('env','TYPEORM_CONNECTION') }}"
+    echo "TYPEORM_CONNECTION"
+    echo ${TYPEORM_CONNECTION}
     TYPEORM_HOST: "{{ lookup('env','TYPEORM_HOST') }}"
+    echo "TYPEORM_HOST"
+    echo ${TYPEORM_HOST}
     TYPEORM_PORT: "{{ lookup('env','TYPEORM_PORT') }}"
+    echo "TYPEORM_PORT"
+    echo ${TYPEORM_PORT}
     TYPEORM_USERNAME: "{{ lookup('env','TYPEORM_USERNAME') }}"
+    echo "TYPEORM_USERNAME"
+    echo ${TYPEORM_USERNAME}
     TYPEORM_PASSWORD: "{{ lookup('env','TYPEORM_PASSWORD') }}"
+    echo "TYPEORM_PASSWORD"
+    echo ${TYPEORM_PASSWORD}
     TYPEORM_DATABASE: "{{ lookup('env','TYPEORM_DATABASE') }}"
+    echo "TYPEORM DATABASE"
+    echo ${TYPEORM_DATABASE}
     ENVIRONMENT: "{{ lookup('env','ENVIRONMENT') }}"
+    echo "ENVIRONMENT"
+    echo ${ENVIRONMENT}
     #API_URL: "{{ lookup('env','API_URL') }}"
 
   gather_facts: true

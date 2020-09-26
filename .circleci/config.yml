@@ -259,16 +259,14 @@ jobs:
             export HOST_NAME=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/host_name)
             echo ${HOST_NAME} >> ./inventory
             echo "Inventory contents"
-            cat ./inventory
-            
+            cat ./inventory    
       - run:
           name: Build and deploy backend
           command: |
             printenv >> ./backend/.env
             cd backend
             npm i
-            npm run build
-            
+            npm run build            
       -run:
           name: Run Ansible playbook
           command: |

@@ -282,8 +282,8 @@ jobs:
           name: Setup EC2 instance & copy compiled backend to the EC2 instance
           command: |
             #!/bin/bash
-            chsh -s /bin/bash $USER
-            pushd backend || exit
+           # chsh -s /bin/bash $USER
+           #pushd backend || exit
             apk add --update ansible
             apk add --update bash
         #    ansible-galaxy install weareinteractive.environment

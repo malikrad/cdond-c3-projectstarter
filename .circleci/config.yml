@@ -219,6 +219,8 @@ jobs:
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL=$API_URL" >> frontend/.env
             echo "${API_URL}"
+            echo "Frontend env contents:"
+            cat frontend/.env
       - run:
           name: "Baking backend API_URL into the front-end"
           command: |
@@ -295,9 +297,7 @@ jobs:
             echo "${BACKEND_IP}"
             echo ${BACKEND_IP}
             APP_URL="http://${BACKEND_IP}:3030/api/status"
-            echo "${APP_URL}"
             echo ${APP_URL}
-            curl "${APP_URL}"
             curl ${APP_URL}
             if curl -s ${APP_URL} | grep "Ok"
             then

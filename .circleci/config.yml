@@ -268,7 +268,7 @@ jobs:
             cd backend
             npm i
             npm run build
-            cd .circleci/ansible
+            cd ./.circleci/ansible
             ansible-playbook -i ./inventory main.yml
       - destroy-environment
       - revert-migration 

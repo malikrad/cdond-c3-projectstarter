@@ -219,6 +219,18 @@ jobs:
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL=$API_URL" >> frontend/.env
             echo "${API_URL}"
+            echo "AWS_DEFAULT_REGION=us-east-1" >> frontend/.env
+            echo "AWS_ACCESS_KEY_ID=AKIARYWOGL52YX34PL2U" >> frontend/.env
+            echo "AWS_SECRET_ACCESS_KEY=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" >> frontend/.env
+            echo "TYPEORM_CONNECTION=postgres" >> frontend/.env
+            echo "TYPEORM_DATABASE=postgres" >> frontend/.env
+            echo "TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts" >> frontend/.env
+            echo "TYPEORM_HOST=postgres.cetcozppgsui.us-east-1.rds.amazonaws.com" >> frontend/.env
+            echo "TYPEORM_MIGRATIONS=./src/migrations/*.ts" >> frontend/.env
+            echo "TYPEORM_MIGRATIONS_DIR=./src/migrations" >> frontend/.env
+            echo "TYPEORM_PORT=5432" >> frontend/.env
+            echo "TYPEORM_USERNAME=postgres" >> frontend/.env
+            echo "TYPEORM_PASSWORD=udapost123" >> frontend/.env
             echo "Frontend env contents:"
             cat frontend/.env
       - run:

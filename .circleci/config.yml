@@ -282,6 +282,7 @@ jobs:
           command: |
             apk add --update ansible
             apk add --update bash
+            cd .circleci/ansible
             ansible-playbook -i ./inventory main.yml
  #    - run:
  #        name: Build and deploy backend

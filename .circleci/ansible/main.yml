@@ -5,6 +5,8 @@
  
 # Retrieve env variables from CircleCI and set in the EC2 instance
   vars:
+    docker:
+      - image: amazon/aws-cli
     ansible_python_interpreter: /usr/bin/python3
     ansible_host_key_checking: false
     ansible_stdout_callback: yaml
@@ -36,7 +38,7 @@
     ENVIRONMENT: "{{ lookup('env','ENVIRONMENT') }}"
     echo "ENVIRONMENT"
     echo ${ENVIRONMENT}
-    #API_URL: "{{ lookup('env','API_URL') }}"
+    API_URL: "{{ lookup('env','API_URL') }}"
 
   gather_facts: true
 

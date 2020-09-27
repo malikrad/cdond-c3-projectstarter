@@ -9,7 +9,7 @@ commands:
       - run:
           name: Delete all files in the current S3 bucket
           command: |
-            if aws s3api head-bucket --bucket udapeople-frontend-${CIRCLE_WORKFLOW_ID}
+            if aws s3api head-bucket --bucket udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
             then
               aws s3 rm s3://udapeople-frontend-${CIRCLE_WORKFLOW_ID}/ --recursive
             fi
@@ -17,8 +17,8 @@ commands:
       - run:
           name: Delete the current AWS CloudFormation stacks
           command: |
-            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID}
-            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID}
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
 
   revert-migration:
@@ -119,28 +119,28 @@ jobs:
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
-              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
-              --parameter-override ID="${CIRCLE_WORKFLOW_ID}" \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-override ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udaPeople
       - run:
           name: Save the URL of EC2 instance to https://memstash.io/
           command: |
             HOST_NAME=$(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[0].PublicDnsName" --output text)
             echo ${HOST_NAME}
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data ${HOST_NAME}  https://api.memstash.io/values/host_name         
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data ${HOST_NAME}  https://api.memstash.io/values/host_name         
       - run:
           name: frontend infra
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
-              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}" \
+              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udaPeople
       - run:
           name: Add Backend EC2 Instance IP to inventory
           command: |
             aws ec2 describe-instances \
-              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text >> .circleci/ansible/inventory.txt
       - persist_to_workspace:
@@ -209,7 +209,7 @@ jobs:
           name: Get backend url
           command: |
             export BACKEND_IP=$(aws ec2 describe-instances \
-              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
             export API_URL="http://${BACKEND_IP}:3030"
@@ -226,7 +226,7 @@ jobs:
       - run: 
           name: Copy built frontend files to the S3 bucket
           command: |
-            aws s3 cp ./frontend/dist s3://udapeople-frontend-"${CIRCLE_WORKFLOW_ID}" --recursive  
+            aws s3 cp ./frontend/dist s3://udapeople-frontend-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive  
       - destroy-environment
       - revert-migration
 
@@ -253,7 +253,7 @@ jobs:
       - run:
           name: Smoke test frontend
           command: |
-            URL="http://udapeople-frontend-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-1.amazonaws.com/#/employee"
+            URL="http://udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employee"
             if curl -s ${URL} | grep "Welcome"
             then
               return 0

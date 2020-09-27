@@ -135,7 +135,7 @@ jobs:
               --template-file .circleci/files/frontend.yml \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udaPeople
+              --tags project=udapeople
       - run:
           name: Add Backend EC2 Instance IP to inventory
           command: |
@@ -287,7 +287,7 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/cloudfront.yml \
               --stack-name udapeople-cloudfront \
-              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}" \
+              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople &
             if [[ "$STACKS[@]" =~ "$OldWorkflowID" ]]
             then
@@ -323,5 +323,5 @@ workflows:
           requires: [configure-infrastructure]
       - smoke-test:
           requires: [deploy-frontend]
-   #  - cloudfront-update:
-   #       requires: [smoke-test]
+      - cloudfront-update:
+          requires: [smoke-test]

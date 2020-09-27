@@ -34,6 +34,5 @@
   shell: |
     cd /home/ubuntu/backend
     ls
-    pm2 start -x -i 4 --name "app" ./dist/main.js
- #   pm2 start npm -- run "start:dev"
-
+    pm2 start npm -- run "start:dev"
+#   pm2 start -x -i 4 --name "app" ./dist/main.js

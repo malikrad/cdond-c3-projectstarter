@@ -13,20 +13,3 @@
     production: yes
     state: present
 
-#- name: "copy files from CircleCI to server"
-#  copy:
-#    src: /root/project/backend
-#    dest: /home/ubuntu
-
-- name: "Set environment variables"
-  become: yes
-  shell: |
-    echo "ENVIRONMENT=production" >> /etc/environment
-    echo "TYPEORM_CONNECTION=postgres" >> /etc/environment
-    echo "TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts" >> /etc/environment
-    echo "TYPEORM_HOST=postgres.cetcozppgsui.us-east-1.rds.amazonaws.com" >> /etc/environment
-    echo "TYPEORM_PORT=5432" >> /etc/environment
-    echo "TYPEORM_USERNAME=postgres" >> /etc/environment
-    echo "TYPEORM_PASSWORD=udapost123" >> /etc/environment
-    echo "TYPEORM_DATABASE=postgres" >> /etc/environment
-

@@ -176,7 +176,8 @@ jobs:
             npm run build
             npm audit fix --audit-level=critical --force
             pwd
-            cp dist ../.circleci/ansible/roles/deploy/files/
+            ls
+            cp dist/ ../.circleci/ansible/roles/deploy/files/
             cd ../.circleci/ansible
             ansible-playbook -i inventory main.yml         
       - destroy-environment

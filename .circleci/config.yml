@@ -127,8 +127,7 @@ jobs:
           command: |
             HOST_NAME=$(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[0].PublicDnsName" --output text)
             echo ${HOST_NAME}
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data ${HOST_NAME}  https://api.memstash.io/values/host_name 
-            
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data ${HOST_NAME}  https://api.memstash.io/values/host_name         
       - run:
           name: frontend infra
           command: |
@@ -137,12 +136,17 @@ jobs:
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}" \
               --tags project=udaPeople
-              #ARN=$(aws s3 ls | grep udapeople)
-              #echo "ARN=$ARN"
-              #curl -H "Content-Type: text/plain" \
-              #     -H "token: 97jm1945-45k1-4b71-896f-c1i276462430" \
-              #     --request PUT --data 
-              #     "https://api.memstash.io/values/arn_${CIRCLE_WORKFLOW_ID}"
+      - run:
+          name: Add Backend EC2 Instance IP to inventory
+          command: |
+            aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text >> .circleci/ansible/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
       - destroy-environment
 
   configure-infrastructure:
@@ -159,47 +163,31 @@ jobs:
             pip install awscli
       - add_ssh_keys:
           fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
+      - attach_workspace:
+          at: ~/
       - run:
-          name: Set up inventory file
+          name: Install dependencies
+          command: |
+            apk add --update tar gzip ansible nodejs npm
+            pip install awscli
+      - run:
+          name: Add env file
+          command: |
+            echo "TYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}" >> backend/.env
+            echo "TYPEORM_ENTITIES=${TYPEORM_ENTITIES}" >> backend/.env
+            echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" >> backend/.env
+            echo "TYPEORM_HOST=${TYPEORM_HOST}" >> backend/.env
+            echo "TYPEORM_PORT=${TYPEORM_PORT}" >> backend/.env
+            echo "TYPEORM_USERNAME=${TYPEORM_USERNAME}" >> backend/.env
+            echo "TYPEORM_PASSWORD=${TYPEORM_PASSWORD}" >> backend/.env
+            echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" >> backend/.env
+            echo "ENVIRONMENT=${ENVIRONMENT}" >> backend/.env
+      - run:
+          name: Configure server
           command: |
             cd .circleci/ansible
-            echo "[all]" > ./inventory
-            export HOST_NAME=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/host_name) 
-            echo ${HOST_NAME} >> ./inventory
-            echo "Inventory contents:"
-            cat ./inventory
-      - run:
-          name: Configure server with ansible
-          command: |
-            cd backend
-            npm i
-            npm run build
-            npm audit fix --audit-level=critical --force
-            pwd
-            ls
-            cp dist/ ../.circleci/ansible/roles/deploy/files/
-            cd ../.circleci/ansible
-            ansible-playbook -i inventory main.yml         
-      - destroy-environment
-
-  run-migrations:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - run:
-          name: Run migrations
-          command: |
-            cd backend
-            npm install
-            MIGRATED=$(npm run migrations)
-      - run:
-          name: Send migration result to memstash
-          command: |
-            if grep -q "success!" "$MIGRATED"
-            then
-              curl --request GET https://api.memstash.io/values/migration
-            fi
+            tar -czvf ../../backend.tar.gz ../../backend
+            ansible-playbook -i inventory.txt main.yml        
       - destroy-environment
 
   deploy-frontend:
@@ -227,18 +215,6 @@ jobs:
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL=$API_URL" >> frontend/.env
             echo "${API_URL}"
-            echo "AWS_DEFAULT_REGION=us-east-1" >> frontend/.env
-            echo "TYPEORM_CONNECTION=postgres" >> frontend/.env
-            echo "TYPEORM_DATABASE=postgres" >> frontend/.env
-            echo "TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts" >> frontend/.env
-            echo "TYPEORM_HOST=postgres.cetcozppgsui.us-east-1.rds.amazonaws.com" >> frontend/.env
-            echo "TYPEORM_MIGRATIONS=./src/migrations/*.ts" >> frontend/.env
-            echo "TYPEORM_MIGRATIONS_DIR=./src/migrations" >> frontend/.env
-            echo "TYPEORM_PORT=5432" >> frontend/.env
-            echo "TYPEORM_USERNAME=postgres" >> frontend/.env
-            echo "TYPEORM_PASSWORD=udapost123" >> frontend/.env
-            echo "Frontend env contents:"
-            cat frontend/.env
       - run:
           name: "Baking backend API_URL into the front-end"
           command: |
@@ -246,33 +222,13 @@ jobs:
             cd frontend
             npm i
             npm run build      
- #     - run:
- #         name: Deploy frontend 
- #         command: |
- #           cd frontend
- #           npm install
- #           npm run build
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID}".tar.gz dist
       - run: 
           name: Copy built frontend files to the S3 bucket
           command: |
             aws s3 cp ./frontend/dist s3://udapeople-frontend-"${CIRCLE_WORKFLOW_ID}" --recursive  
       - destroy-environment
       - revert-migration
-
-  deploy-backend:
-    docker:
-      - image: sitapati/docker-alpine-python-node
-    steps:
-      - checkout
-      - run:
-          name: Build and deploy backend
-          command: |
-            printenv >> ./backend/.env
-            cd backend
-            npm i
-            npm run build            
-      - destroy-environment
-      - revert-migration 
 
   smoke-test:
     docker:
@@ -371,13 +327,9 @@ workflows:
                 - master
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
       - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
+          requires: [configure-infrastructure]
+       - smoke-test:
+          requires: [deploy-frontend]
    #  - cloudfront-update:
    #       requires: [smoke-test]

@@ -246,22 +246,14 @@ jobs:
                   --filters Name=instance-state-name,Values=running \
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
-            echo "${BACKEND_IP}"
             echo ${BACKEND_IP}
             APP_URL="http://${BACKEND_IP}:3030/api/status"
             echo ${APP_URL}
             curl ${APP_URL}
-            if curl -s ${APP_URL} | grep "Ok"
-            then
-              return 1
-            else
-              return 0
-            fi
       - run:
           name: Smoke test frontend
           command: |
-            URL="http://udapeople-frontend-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-1.amazonaws.com/#/employee
-   
+            URL="http://udapeople-frontend-${CIRCLE_WORKFLOW_ID}.s3-website-us-east-1.amazonaws.com/#/employee"
             if curl -s ${URL} | grep "Welcome"
             then
               return 0

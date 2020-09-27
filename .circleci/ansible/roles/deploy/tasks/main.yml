@@ -14,15 +14,8 @@
 - name: "Copy dist files"
   become: true
   copy:
-    src: files/backend_artifact.tar.gz
+    src: files/dist
     dest: ./dist
-
-- name: "Unpack dist files"
-  become: true
-  shell: |
-  cd dist
-  tar -xzf backend_artifact.tar.gz
-  rm backend_artifact.tar.gz   
 
 - name: Executing node
   become: true

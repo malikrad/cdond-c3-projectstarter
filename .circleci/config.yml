@@ -264,7 +264,10 @@ jobs:
       - revert-migration
 
   deploy-cloudfront:
+    docker:
+      - image: amazon/aws-cli
     steps:
+      - checkout
       - run:
           name: create cloudfront distribution
           command: |

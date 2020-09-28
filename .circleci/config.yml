@@ -263,7 +263,8 @@ jobs:
       - destroy-environment
       - revert-migration
 
-   deploy-cloudfront:
+  deploy-cloudfront:
+    steps:
       - run:
           name: create cloudfront distribution
           command: |

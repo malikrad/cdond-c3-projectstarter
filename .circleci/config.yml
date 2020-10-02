@@ -72,8 +72,6 @@ jobs:
             npm audit fix --audit-level=critical --force
             mkdir -p ./reports/junit/
             npm install --save-dev jest-junit jest-junit-reporter           
-        #    npm i jest
-        #    npm i junit
             npm run test
       - run:
           name: Save frontend test results

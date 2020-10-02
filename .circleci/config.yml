@@ -3,11 +3,11 @@ version: 2.1
 ### It's a good practice to keep your commands at the top of the config file. In this project, you'll need at least 2 commands:
 
 commands:
-  destroy-environment:
-    description: Destroy all cloudformation stacks given a workflow ID.
+  auto-destruct-env:
+    description: Destroy the entire infrastructure
     steps:
       - run:
-          name: Delete all files in the current S3 bucket
+          name: Delete all files from the current S3 bucket
           command: |
             if aws s3api head-bucket --bucket udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
             then
@@ -15,7 +15,7 @@ commands:
             fi
           when: on_fail
       - run:
-          name: Delete the current AWS CloudFormation stacks
+          name: Delete the current CloudFormation stacks
           command: |
             aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
             aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
@@ -41,7 +41,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build Frontend Code
+          name: Build application frontend
           command: |
             cd frontend
             npm i
@@ -53,7 +53,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build Backend Code
+          name: Build application backend
           command: |
             cd backend
             npm i
@@ -69,12 +69,12 @@ jobs:
           command: |
             cd frontend
             npm i
-            npm install jest-junit
+            npm i jest-junit
             npm run test -- --reporters=default --reporters=jest-junit
           environment:
-            JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
+            JEST_JUNIT_OUTPUT_DIR: /testresults/reports/junit/
       - store_test_results:
-          path: /tmp/reports/junit/             
+          path: /testresults/reports/junit/             
           
   test-backend:
     docker:
@@ -82,18 +82,18 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Test Backend Code
+          name: Test backend
           command: |
             cd backend
             npm i
             npm install jest-junit
             npm run test -- --reporters=default --reporters=jest-junit
           environment:
-            JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
+            JEST_JUNIT_OUTPUT_DIR: /testresults/reports/junit/
       - store_test_results:
-          path: /tmp/reports/junit/
+          path: /testresults/reports/junit/
             
-  scan-frontend:
+  analyze-frontend:
     docker:
       - image: circleci/node:13.8.0
     steps:
@@ -105,7 +105,7 @@ jobs:
             npm i
             npm audit fix --audit-level=critical
             
-  scan-backend:
+  analyze-backend:
     docker:
       - image: circleci/node:13.8.0
     steps:
@@ -117,20 +117,20 @@ jobs:
             npm i
             npm audit fix --audit-level=critical
             
-  deploy-infrastructure:
+  deploy-infra:
     docker:
       - image: amazon/aws-cli
     steps:
       - checkout
       - run: yum -y install tar gzip
       - run:
-          name: backend infra
+          name: deploy backend infra
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-override ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udaPeople
+              --tags project=udapeople
       - run:
           name: Save the URL of EC2 instance to https://memstash.io/
           command: |
@@ -138,7 +138,7 @@ jobs:
             echo ${HOST_NAME}
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data ${HOST_NAME}  https://api.memstash.io/values/host_name         
       - run:
-          name: frontend infra
+          name: deploy frontend infra
           command: |
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
@@ -156,9 +156,9 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      - destroy-environment
+      - auto-destruct-env
 
-  configure-infrastructure:
+  config-infra:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -197,7 +197,7 @@ jobs:
             cd .circleci/ansible
             tar -czvf ../../backend.tar.gz ../../backend
             ansible-playbook -i inventory.txt main.yml        
-      - destroy-environment
+      - auto-destruct-env
 
   deploy-frontend:
     docker:
@@ -236,7 +236,7 @@ jobs:
           name: Copy built frontend files to the S3 bucket
           command: |
             aws s3 cp ./frontend/dist s3://udapeople-frontend-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive  
-      - destroy-environment
+      - auto-destruct-env
       - revert-migration
 
   smoke-test:
@@ -269,7 +269,7 @@ jobs:
             else
               return 1
             fi
-      - destroy-environment
+      - auto-destruct-env
       - revert-migration
 
   deploy-cloudfront:
@@ -286,7 +286,7 @@ jobs:
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople  
               
-  cloudfront-update:
+  update-cloudfront:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -318,7 +318,7 @@ jobs:
               aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
               aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
             fi
-      - destroy-environment
+      - auto-destruct-env
       - revert-migration
 
 workflows:
@@ -330,23 +330,23 @@ workflows:
           requires: [build-frontend]
       - test-backend:
           requires: [build-backend]
-      - scan-frontend:
+      - analyze-frontend:
           requires: [build-frontend]
-      - scan-backend:
+      - analyze-backend:
           requires: [build-backend]
- #     - deploy-infrastructure:
- #         requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+ #     - deploy-infra:
+ #         requires: [test-frontend, test-backend, analyze-frontend, analyze-backend]
  #         filters:
  #           branches:
  #             only:
  #               - master
- #     - configure-infrastructure:
- #         requires: [deploy-infrastructure]
+ #     - configure-infra:
+ #         requires: [deploy-infra]
  #     - deploy-frontend:
- #         requires: [configure-infrastructure]
+ #         requires: [configure-infra]
  #     - smoke-test:
  #         requires: [deploy-frontend]
  #    - deploy-cloudfront:
  #        requires: [smoke-test]
- #     - cloudfront-update:
+ #     - update-cloudfront:
  #         requires: [smoke-test]

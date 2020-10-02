@@ -76,8 +76,6 @@ jobs:
       - run:
           name: Save frontend test results
           command: |
-         #   mkdir -p ~/test-reports/junit/
-        #    find . -type f -regex ".*/build/test-reports/.*xml" -exec cp {} ~/test-reports/junit/ \;
             ./node_modules/.bin/jest --ci --runInBand --reporters=default --reporters=jest-junit
           when: always
           environment:

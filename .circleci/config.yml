@@ -76,7 +76,7 @@ jobs:
       - run:
           name: Save frontend test results
           command: |
-            ./node_modules/.bin/jest --ci --runInBand --reporters=default --reporters=jest-junit
+            ./node_modules/bin/jest --ci --runInBand --reporters=default --reporters=jest-junit
           when: always
           environment:
             JEST_JUNIT_OUTPUT_DIR: "./reports/junit/"
@@ -99,7 +99,7 @@ jobs:
       - run:
           name: Save backend test results
           command: |
-            ./node_modules/.bin/jest --ci --runInBand --reporters=default --reporters=jest-junit
+            ./node_modules/bin/jest --ci --runInBand --reporters=default --reporters=jest-junit
           environment:
             JEST_JUNIT_OUTPUT_DIR: "./reports/junit/"
       - store_test_results:

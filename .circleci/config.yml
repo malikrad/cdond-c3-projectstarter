@@ -70,18 +70,22 @@ jobs:
             cd frontend
             npm i
             npm audit fix --audit-level=critical --force
-            mkdir -p ./reports/junit/
+            mkdir -p ./frontend/reports/junit/
             npm install --save-dev jest-junit jest-junit-reporter           
             npm run test
+    steps:
       - run:
-          name: Save frontend test results
-          command: |
-            ./node_modules/bin/jest --ci --runInBand --reporters=default --reporters=jest-junit
-          when: always
+          name: Install JUnit coverage reporter
+          command: yarn add --dev jest-junit
+      - run:
+          name: Run frontend tests with JUnit as reporter
+          command: jest --ci --runInBand --reporters=default --reporters=jest-junit
           environment:
-            JEST_JUNIT_OUTPUT_DIR: "./reports/junit/"
+            JEST_JUNIT_OUTPUT_DIR: ./frontend/reports/junit/
       - store_test_results:
           path: ./frontend/reports/junit/
+      - store_artifacts:
+          path: ./frontend/reports/junit                 
           
   test-backend:
     docker:
@@ -93,17 +97,22 @@ jobs:
           command: |
             cd backend
             npm i
-            mkdir -p ./reports/junit/
+            mkdir -p ./backend/reports/junit/
             npm install --save-dev jest-junit jest-junit-reporter 
             npm run test
+    steps:
       - run:
-          name: Save backend test results
-          command: |
-            ./node_modules/bin/jest --ci --runInBand --reporters=default --reporters=jest-junit
+          name: Install JUnit coverage reporter
+          command: yarn add --dev jest-junit
+      - run:
+          name: Run backend tests with JUnit as reporter
+          command: jest --ci --runInBand --reporters=default --reporters=jest-junit
           environment:
-            JEST_JUNIT_OUTPUT_DIR: "./reports/junit/"
+            JEST_JUNIT_OUTPUT_DIR: ./backend/reports/junit/
       - store_test_results:
           path: ./backend/reports/junit/
+      - store_artifacts:
+          path: ./backend/reports/junit
             
   scan-frontend:
     docker:

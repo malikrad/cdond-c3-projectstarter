@@ -70,17 +70,22 @@ jobs:
             cd frontend
             npm i
             npm audit fix --audit-level=critical --force
-            npm i jest
-            npm i junit
+            mkdir -p ./reports/junit/
+            npm install --save-dev jest-junit jest-junit-reporter           
+        #    npm i jest
+        #    npm i junit
             npm run test
       - run:
           name: Save frontend test results
           command: |
-            mkdir -p ~/test-reports/junit/
-            find . -type f -regex ".*/build/test-reports/.*xml" -exec cp {} ~/test-reports/junit/ \;
+         #   mkdir -p ~/test-reports/junit/
+        #    find . -type f -regex ".*/build/test-reports/.*xml" -exec cp {} ~/test-reports/junit/ \;
+            ./node_modules/.bin/jest --ci --runInBand --reporters=default --reporters=jest-junit
           when: always
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: "./reports/junit/"
       - store_test_results:
-          path: ~/test-reports
+          path: ./frontend/reports/junit/
           
   test-backend:
     docker:
@@ -92,16 +97,17 @@ jobs:
           command: |
             cd backend
             npm i
-            npm i jest
-            npm i junit
+            mkdir -p ./reports/junit/
+            npm install --save-dev jest-junit jest-junit-reporter 
             npm run test
       - run:
           name: Save backend test results
           command: |
-            find . -type f -regex ".*/build/test-reports/.*xml" -exec cp {} ~/test-reports/junit/ \;
-          when: always
+            ./node_modules/.bin/jest --ci --runInBand --reporters=default --reporters=jest-junit
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: "./reports/junit/"
       - store_test_results:
-          path: ~/test-reports 
+          path: ./backend/reports/junit/
             
   scan-frontend:
     docker:

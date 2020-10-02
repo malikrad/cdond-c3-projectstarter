@@ -70,8 +70,18 @@ jobs:
             cd frontend
             npm i
             npm audit fix --audit-level=critical --force
+            npm i jest
+            npm i junit
             npm run test
-            
+      - run:
+          name: Save frontend test results
+          command: |
+            mkdir -p ~/test-reports/junit/
+            find . -type f -regex ".*/build/test-reports/.*xml" -exec cp {} ~/test-reports/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-reports
+          
   test-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -82,7 +92,16 @@ jobs:
           command: |
             cd backend
             npm i
+            npm i jest
+            npm i junit
             npm run test
+      - run:
+          name: Save backend test results
+          command: |
+            find . -type f -regex ".*/build/test-reports/.*xml" -exec cp {} ~/test-reports/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-reports 
             
   scan-frontend:
     docker:
@@ -325,19 +344,19 @@ workflows:
           requires: [build-frontend]
       - scan-backend:
           requires: [build-backend]
-      - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only:
-                - master
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - deploy-frontend:
-          requires: [configure-infrastructure]
-      - smoke-test:
-          requires: [deploy-frontend]
-      - deploy-cloudfront:
-          requires: [smoke-test]
+ #     - deploy-infrastructure:
+ #         requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+ #         filters:
+ #           branches:
+ #             only:
+ #               - master
+ #     - configure-infrastructure:
+ #         requires: [deploy-infrastructure]
+ #     - deploy-frontend:
+ #         requires: [configure-infrastructure]
+ #     - smoke-test:
+ #         requires: [deploy-frontend]
+ #    - deploy-cloudfront:
+ #        requires: [smoke-test]
  #     - cloudfront-update:
  #         requires: [smoke-test]

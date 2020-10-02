@@ -72,6 +72,7 @@ jobs:
             npm audit fix --audit-level=critical --force
             mkdir -p ./frontend/reports/junit/
             npm install --save-dev jest
+            npm install jest-cli --save-dev
             npm install --save-dev jest-junit jest-junit-reporter           
             npm run test
       - run:
@@ -99,6 +100,7 @@ jobs:
             npm i
             mkdir -p ./backend/reports/junit/
             npm install --save-dev jest
+            npm install jest-cli --save-dev
             npm install --save-dev jest-junit jest-junit-reporter 
             npm run test
       - run:

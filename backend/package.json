@@ -101,6 +101,9 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "transformIgnorePatterns": [
+    "/!node_modules\\/@fullcalendar/"
+    ],
     "coverageDirectory": "<rootDir>/coverage",
     "collectCoverage": true,
     "collectCoverageFrom": [

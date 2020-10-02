@@ -73,7 +73,6 @@ jobs:
             mkdir -p ./frontend/reports/junit/
             npm install --save-dev jest-junit jest-junit-reporter           
             npm run test
-    steps:
       - run:
           name: Install JUnit coverage reporter
           command: yarn add --dev jest-junit
@@ -100,7 +99,6 @@ jobs:
             mkdir -p ./backend/reports/junit/
             npm install --save-dev jest-junit jest-junit-reporter 
             npm run test
-    steps:
       - run:
           name: Install JUnit coverage reporter
           command: yarn add --dev jest-junit

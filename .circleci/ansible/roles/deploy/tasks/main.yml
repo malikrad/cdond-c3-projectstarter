@@ -20,17 +20,8 @@
     PATH="$PATH"
     npm i
     npm run build
-    
-- name: "run migrations and save status to memstash.io"
-  shell: |
-    cd /home/ubuntu/backend
-    npm run migrations > migrations.txt
-    cat migrations.txt
-    export CIRCLE_WORKFLOW_ID="{{ CIRCLE_WORKFLOW_ID }}"
-    echo CIRCLE_WORKFLOW_ID=${CIRCLE_WORKFLOW_ID}
-    curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data $( grep -c "No migrations are pending" migrations.txt ) https://api.memstash.io/values/migration_status
-  register: migration_output
- 
+
+- name: "Run pm2 daemon"
   shell: |
     cd /home/ubuntu/backend
     ls

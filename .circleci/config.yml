@@ -1,6 +1,7 @@
 version: 2.1
 
-### It's a good practice to keep your commands at the top of the config file. In this project, you'll need at least 2 commands:
+orbs:
+  slack: circleci/slack@3.4.2
 
 commands:
   auto-destruct-env:
@@ -46,6 +47,8 @@ jobs:
             cd frontend
             npm i
             npm run build
+      - slack/status:
+          fail_only: true
             
   build-backend:
     docker:
@@ -58,6 +61,8 @@ jobs:
             cd backend
             npm i
             npm run build
+      - slack/status:
+          fail_only: true
             
   test-frontend:
     docker:
@@ -74,7 +79,9 @@ jobs:
           environment:
             JEST_JUNIT_OUTPUT_DIR: /testresults/reports/junit/
       - store_test_results:
-          path: /testresults/reports/junit/             
+          path: /testresults/reports/junit/     
+      - slack/status:
+          fail_only: true
           
   test-backend:
     docker:
@@ -92,6 +99,8 @@ jobs:
             JEST_JUNIT_OUTPUT_DIR: /testresults/reports/junit/
       - store_test_results:
           path: /testresults/reports/junit/
+      - slack/status:
+          fail_only: true
             
   analyze-frontend:
     docker:
@@ -104,6 +113,8 @@ jobs:
             cd frontend
             npm i
             npm audit fix --audit-level=critical
+      - slack/status:
+          fail_only: true            
             
   analyze-backend:
     docker:
@@ -116,6 +127,8 @@ jobs:
             cd backend
             npm i
             npm audit fix --audit-level=critical
+      - slack/status:
+          fail_only: true
             
   deploy-infra:
     docker:
@@ -157,6 +170,8 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       - auto-destruct-env
+      - slack/status:
+          fail_only: true 
 
   config-infra:
     docker:
@@ -198,6 +213,8 @@ jobs:
             tar -czvf ../../backend.tar.gz ../../backend
             ansible-playbook -i inventory.txt main.yml        
       - auto-destruct-env
+      - slack/status:
+          fail_only: true
 
   deploy-frontend:
     docker:
@@ -238,6 +255,8 @@ jobs:
             aws s3 cp ./frontend/dist s3://udapeople-frontend-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive  
       - auto-destruct-env
       - revert-migration
+      - slack/status:
+          fail_only: true
 
   smoke-test:
     docker:
@@ -269,8 +288,10 @@ jobs:
             else
               return 1
             fi
-      - auto-destruct-env
       - revert-migration
+      - auto-destruct-env
+      - slack/status:
+          fail_only: true 
 
   deploy-cloudfront:
     docker:
@@ -284,7 +305,10 @@ jobs:
               --template-file .circleci/files/cloudfront.yml \
               --stack-name "udapeople-cloudfront-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople  
+              --tags project=udapeople
+      - auto-destruct-env 
+      - slack/status:
+          fail_only: true              
               
   update-cloudfront:
     docker:
@@ -319,7 +343,8 @@ jobs:
               aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
             fi
       - auto-destruct-env
-      - revert-migration
+      - slack/status:
+          fail_only: true
 
 workflows:
   default:
@@ -334,19 +359,35 @@ workflows:
           requires: [build-frontend]
       - analyze-backend:
           requires: [build-backend]
- #     - deploy-infra:
- #         requires: [test-frontend, test-backend, analyze-frontend, analyze-backend]
- #         filters:
- #           branches:
- #             only:
- #               - master
- #     - configure-infra:
- #         requires: [deploy-infra]
- #     - deploy-frontend:
- #         requires: [configure-infra]
- #     - smoke-test:
- #         requires: [deploy-frontend]
- #    - deploy-cloudfront:
- #        requires: [smoke-test]
- #     - update-cloudfront:
- #         requires: [smoke-test]
+      - deploy-infra:
+          requires: [test-frontend, test-backend, analyze-frontend, analyze-backend]
+          filters:
+            branches:
+              only:
+                - master
+      - configure-infra:
+          requires: [deploy-infra]
+          filters:
+            branches:
+              only:
+                - master
+      - deploy-frontend:
+          requires: [configure-infra]
+          filters:
+            branches:
+              only:
+                - master          
+      - smoke-test:
+          requires: [deploy-frontend]
+          filters:
+            branches:
+              only:
+                - master
+      - deploy-cloudfront:
+          requires: [smoke-test]
+          filters:
+            branches:
+              only:
+                - master
+#      - update-cloudfront:
+#          requires: [smoke-test]

@@ -267,6 +267,7 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update curl
+            apk add --update bash
             pip install awscli
       - run:
           name: Smoke test backend
@@ -299,6 +300,10 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update bash
       - run:
           name: create cloudfront distribution
           command: |

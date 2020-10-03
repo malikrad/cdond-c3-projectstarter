@@ -301,10 +301,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
-          command: |
-            apk add --update bash
-      - run:
           name: create cloudfront distribution
           command: |
             aws cloudformation deploy \

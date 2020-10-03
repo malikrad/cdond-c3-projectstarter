@@ -30,10 +30,14 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            cd backend
-            npm i
-            npm audit fix --audit-level=critical --force
-            npm run migrations:revert
+            MIGRATION_STATUS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/migration_completion_<< pipeline.id >>)
+            echo ${MIGRATION_STATUS}
+            if [[ ${MIGRATION_STATUS} == 1 ]]
+              cd backend
+              npm i
+              npm audit fix --audit-level=critical --force
+              npm run migrations:revert
+            fi
 
 jobs:
   build-frontend:
@@ -213,6 +217,23 @@ jobs:
             tar -czvf ../../backend.tar.gz ../../backend
             ansible-playbook -i inventory.txt main.yml        
       - auto-destruct-env
+      - slack/status:
+          fail_only: true
+
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Run migrations and save status to https://memstash.io/
+          command: |
+            cd backend
+            npm install
+            npm run migrations > migrations.txt
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}"   --request PUT \
+              --data $( grep -c "No migrations are pending" migrations.txt ) \
+              https://api.memstash.io/values/migration_completion_<< pipeline.id >>
       - slack/status:
           fail_only: true
 

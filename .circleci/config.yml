@@ -77,9 +77,9 @@ jobs:
             npm i jest-junit
             npm run test -- --reporters=default --reporters=jest-junit
           environment:
-            JEST_JUNIT_OUTPUT_DIR: /testresults/reports/junit/
+            JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
       - store_test_results:
-          path: /testresults/reports/junit/     
+          path: /tmp/reports/junit/     
       - slack/status:
           fail_only: true
           
@@ -96,9 +96,9 @@ jobs:
             npm install jest-junit
             npm run test -- --reporters=default --reporters=jest-junit
           environment:
-            JEST_JUNIT_OUTPUT_DIR: /testresults/reports/junit/
+            JEST_JUNIT_OUTPUT_DIR: /tmp/reports/junit/
       - store_test_results:
-          path: /testresults/reports/junit/
+          path: /tmp/reports/junit/
       - slack/status:
           fail_only: true
             

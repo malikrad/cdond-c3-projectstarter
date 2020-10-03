@@ -230,6 +230,7 @@ jobs:
             apk add --no-cache ansible
             apk add --no-cache nodejs
             apk add --no-cache npm
+            apk add --no-cache bash
             pip install awscli
       - run:
           name: Get backend url

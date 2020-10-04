@@ -362,7 +362,6 @@ jobs:
           command: |
             $OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/old_workflowID)
             echo Old Workflow Id: "$OldWorkflowID"
-
 #            aws cloudformation deploy \
 #              --template-file .circleci/files/cloudfront.yml \
 #              --stack-name udapeople-cloudfront \

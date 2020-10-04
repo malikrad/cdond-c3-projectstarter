@@ -30,9 +30,9 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            MIGRATION_STATUS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/migration_completion_<< pipeline.id >>)
-            echo ${MIGRATION_STATUS}
-            if [[ ${MIGRATION_STATUS} == 1 ]]
+            DATA_MIGRATIONSTATUS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/migration_completion_<< pipeline.id >>)
+            echo ${DATA_MIGRATIONSTATUS}
+            if [[ ${DATA_MIGRATIONSTATUS} == 1 ]]
               cd backend
               npm i
               npm audit fix --audit-level=critical --force
@@ -240,7 +240,7 @@ jobs:
             cd backend
             npm install
             npm run migrations > migrations.txt
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}"   --request PUT \
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}"  --request PUT \
               --data $( grep -c "No migrations are pending" migrations.txt ) \
               https://api.memstash.io/values/migration_completion_<< pipeline.id >>
       - slack/status:
@@ -357,7 +357,7 @@ jobs:
       - run:
           name: Update cloudfront distribution
           command: |
-            $OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/old_workflowID)
+            $OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/old_workflowID)
             echo Old Workflow Id: "$OldWorkflowID"
             echo "Old frontend stack:"
             echo aws cloudformation stack-exists --stack-name "udapeople-frontend-${OldWorkflowID} --output text

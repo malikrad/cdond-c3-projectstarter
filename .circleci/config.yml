@@ -357,17 +357,19 @@ jobs:
       - run:
           name: Update cloudfront distribution
           command: |
+            if [ -n "$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/old_workflowID)"]
+            then
             export $OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/old_workflowID)
             echo Old Workflow Id: "$OldWorkflowID"
             echo "Old frontend stack:"           
-            if [ -n "$OldWorkflowID" ]
-            then 
             echo aws cloudformation stack-exists --stack-name "udapeople-frontend-${OldWorkflowID} --output text
             aws s3 rm "s3://udapeople-frontend-${OldWorkflowID}" --recursive
             aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
             echo "Old backend stack:"
             echo aws cloudformation stack-exists --stack-name "udapeople-backend-${OldWorkflowID} --output text
             aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+            else
+            echo "No stack to delete"
             fi         
       - auto-destruct-env
       - slack/status:

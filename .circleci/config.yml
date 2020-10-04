@@ -355,7 +355,7 @@ jobs:
               --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
             echo "${STACKS}"
             echo "Check condition:"
-            echo "$STACKS[@]" =~ "$OldWorkflowID"
+            echo "[[ "$STACKS[@]" =~ "$OldWorkflowID" ]]"
             echo Old Workflow Id: "$OldWorkflowID"
             echo -n "${OLD_WORKFLOW_ID}"  
 #            aws cloudformation deploy \

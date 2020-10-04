@@ -143,7 +143,6 @@ jobs:
           name: Install dependencies
           command: |
             yum -y install tar gzip
-            pip install awscli
       - run:
           name: Get OldWorkflowID and save it to https://memstash.io/
           command: |

@@ -414,5 +414,5 @@ workflows:
             branches:
               only:
                 - master
-#      - update-cloudfront:
-#          requires: [smoke-test]
+      - update-cloudfront:
+          requires: [smoke-test]

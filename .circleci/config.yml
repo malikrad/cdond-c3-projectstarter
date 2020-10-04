@@ -353,6 +353,9 @@ jobs:
               --no-paginate --output text)
             export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
               --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
+            echo "${STACKS}"
+            echo "Check condition:"
+            echo "$STACKS[@]" =~ "$OldWorkflowID"
             echo Old Workflow Id: "$OldWorkflowID"
             echo -n "${OLD_WORKFLOW_ID}"  
 #            aws cloudformation deploy \
@@ -415,4 +418,4 @@ workflows:
               only:
                 - master
       - update-cloudfront:
-          requires: [smoke-test]
+          requires: [deploy-cloudfront]

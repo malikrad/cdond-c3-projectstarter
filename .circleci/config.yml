@@ -177,7 +177,7 @@ jobs:
       - slack/status:
           fail_only: true 
 
-  config-infra:
+  deploy-backend:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -275,8 +275,8 @@ jobs:
           name: Copy built frontend files to the S3 bucket
           command: |
             aws s3 cp ./frontend/dist s3://udapeople-frontend-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive  
-      - auto-destruct-env
       - revert-migration
+      - auto-destruct-env
       - slack/status:
           fail_only: true
 
@@ -354,20 +354,22 @@ jobs:
             export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
               --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
             echo Old Workflow Id: "$OldWorkflowID"
-            aws cloudformation deploy \
-              --template-file .circleci/files/cloudfront.yml \
-              --stack-name udapeople-cloudfront \
-              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople &
-            if [[ "$STACKS[@]" =~ "$OldWorkflowID" ]]
-            then
-              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
-            fi
-      - auto-destruct-env
-      - slack/status:
-          fail_only: true
+            echo -n "${OLD_WORKFLOW_ID}"  
+#            aws cloudformation deploy \
+#              --template-file .circleci/files/cloudfront.yml \
+#              --stack-name udapeople-cloudfront \
+#              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
+#              --tags project=udapeople &
+            
+#            if [[ "$STACKS[@]" =~ "$OldWorkflowID" ]]
+#            then
+#              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
+#              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+#              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+#            fi
+#      - auto-destruct-env
+#      - slack/status:
+#          fail_only: true
 
 workflows:
   default:
@@ -388,14 +390,14 @@ workflows:
             branches:
               only:
                 - master
-      - config-infra:
+      - deploy-backend:
           requires: [deploy-infra]
           filters:
             branches:
               only:
                 - master
       - deploy-frontend:
-          requires: [config-infra]
+          requires: [deploy-backend]
           filters:
             branches:
               only:

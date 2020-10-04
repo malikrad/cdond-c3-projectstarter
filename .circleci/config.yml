@@ -146,7 +146,7 @@ jobs:
       - run:
           name: Get OldWorkflowID and save it to https://memstash.io/
           command: |
-            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`ID\`].Value" --no-paginate --output text)
+            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
             echo ${OldWorkflowID}  
             if [ -n "$OldWorkflowID" ]
             then
@@ -161,7 +161,7 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/backend.yml \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-override ID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: deploy frontend infra
@@ -169,7 +169,7 @@ jobs:
             aws cloudformation deploy \
               --template-file .circleci/files/frontend.yml \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-override ID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
           name: Add Backend EC2 Instance IP to inventory
@@ -324,25 +324,8 @@ jobs:
       - auto-destruct-env
       - slack/status:
           fail_only: true 
-
+                      
   deploy-cloudfront:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: create cloudfront distribution
-          command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/cloudfront.yml \
-              --stack-name "udapeople-cloudfront-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople
-      - auto-destruct-env 
-      - slack/status:
-          fail_only: true              
-              
-  update-cloudfront:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -357,20 +340,26 @@ jobs:
       - run:
           name: Update cloudfront distribution
           command: |
-            if [ -n "$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/old_workflowID)"]
+            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --no-paginate --output text)
+            export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
+            echo Old Workflow Id: "${OldWorkflowID}"
+            echo Stacks: "${STACKS}"
+            aws cloudformation deploy \
+              --template-file .circleci/files/cloudfront.yml \
+              --stack-name cloud-devops-cloudfront \
+              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople
+            
+            if [ -n "${OldWorkflowID}" ] && [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
-            export $OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/old_workflowID)
-            echo Old Workflow Id: "$OldWorkflowID"
-            echo "Old frontend stack:"           
-            echo aws cloudformation stack-exists --stack-name "udapeople-frontend-${OldWorkflowID} --output text
-            aws s3 rm "s3://udapeople-frontend-${OldWorkflowID}" --recursive
-            aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
-            echo "Old backend stack:"
-            echo aws cloudformation stack-exists --stack-name "udapeople-backend-${OldWorkflowID} --output text
-            aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-            else
-            echo "No stack to delete"
-            fi         
+              echo "Delete old infrastructure"
+              if aws s3api head-bucket --bucket udapeople-frontend-${OldWorkflowID}
+              then
+                aws s3 rm s3://udapeople-frontend-${OldWorkflowID}/ --recursive
+              fi
+              aws cloudformation delete-stack --stack-name cloud-devops-frontend-${OldWorkflowID}
+              aws cloudformation delete-stack --stack-name cloud-devops-backend-${OldWorkflowID}
+            fi          
       - auto-destruct-env
       - slack/status:
           fail_only: true
@@ -418,5 +407,3 @@ workflows:
             branches:
               only:
                 - master
-      - update-cloudfront:
-          requires: [deploy-cloudfront]

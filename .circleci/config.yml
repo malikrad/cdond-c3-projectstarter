@@ -146,9 +146,7 @@ jobs:
       - run:
           name: Get OldWorkflowID and save it to https://memstash.io/
           command: |
-            export OldWorkflowID=$(aws cloudformation \
-              list-exports --query "Exports[?Name==\`ID\`].Value" \
-              --no-paginate --output text)
+            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`ID\`].Value" --no-paginate --output text)
             echo ${OldWorkflowID)  
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data ${OldWorkflowID}  https://api.memstash.io/values/old_workflowID  
       - run:

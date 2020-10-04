@@ -148,7 +148,13 @@ jobs:
           command: |
             export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`ID\`].Value" --no-paginate --output text)
             echo ${OldWorkflowID}  
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data ${OldWorkflowID}  https://api.memstash.io/values/old_workflowID  
+            if [ -n "$OldWorkflowID" ]
+            then
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data ${OldWorkflowID}  https://api.memstash.io/values/old_workflowID
+            else 
+            echo "No old infrastructure exists for UdaPeople"
+            fi
+            
       - run:
           name: deploy backend infra
           command: |
@@ -354,12 +360,15 @@ jobs:
             $OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/old_workflowID)
             echo Old Workflow Id: "$OldWorkflowID"
             echo "Old frontend stack:"
+            if [ -n "$OldWorkflowID" ]
+            then 
             echo aws cloudformation stack-exists --stack-name "udapeople-frontend-${OldWorkflowID} --output text
             aws s3 rm "s3://udapeople-frontend-${OldWorkflowID}" --recursive
             aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
             echo "Old backend stack:"
             echo aws cloudformation stack-exists --stack-name "udapeople-backend-${OldWorkflowID} --output text
             aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+            fi
       - auto-destruct-env
       - slack/status:
           fail_only: true

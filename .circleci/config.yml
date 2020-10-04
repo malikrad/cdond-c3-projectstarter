@@ -158,12 +158,6 @@ jobs:
               --parameter-override ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
-          name: Save the URL of EC2 instance to https://memstash.io/
-          command: |
-            HOST_NAME=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${OldWorkflowID}"  --region us-east-1 --query "Reservations[*].Instances[0].PublicDnsName" --output text)
-            echo ${HOST_NAME}
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data ${HOST_NAME}  https://api.memstash.io/values/host_name         
-      - run:
           name: deploy frontend infra
           command: |
             aws cloudformation deploy \

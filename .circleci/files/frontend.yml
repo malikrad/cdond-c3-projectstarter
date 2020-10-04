@@ -32,8 +32,3 @@ Outputs:
   WebsiteURL:
     Value: !GetAtt WebsiteBucket.WebsiteURL
     Description: URL for website hosted on S3
-  ID:
-    Value: !Sub ${ID}
-    Description: WorkflowID
-    Export:
-      Name: ID

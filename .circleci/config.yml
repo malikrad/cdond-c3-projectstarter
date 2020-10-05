@@ -153,8 +153,7 @@ jobs:
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data ${OldWorkflowID}  https://api.memstash.io/values/old_workflowID
             else 
             echo "No old infrastructure exists for UdaPeople"
-            fi
-            
+            fi            
       - run:
           name: deploy backend infra
           command: |
@@ -327,16 +326,11 @@ jobs:
                       
   deploy-cloudfront:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: amazon/aws-cli
     steps:
       - checkout
       - add_ssh_keys:
           fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update nodejs npm curl bash
-            pip install awscli
       - run:
           name: Update cloudfront distribution
           command: |

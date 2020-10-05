@@ -327,7 +327,7 @@ jobs:
                       
   deploy-cloudfront:
     docker:
-    - image: python:3.7-alpine3.11
+      - image: python:3.7-alpine3.11
     steps:
       - run:
           name: Install dependencies

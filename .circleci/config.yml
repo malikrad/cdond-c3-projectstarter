@@ -346,12 +346,20 @@ jobs:
             export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
             echo Old Workflow Id: "${OldWorkflowID}"
             echo Stacks: "${STACKS}"
+            if [ ! aws cloudformation describe-stacks --stack-name udapeople-cloudfront-ef5554a ]
+            then
+            aws cloudformation create-stack  \
+              --stack-name udapeople-cloudfront \
+              --template-body file://./.circleci/files/cloudfront.yml \
+              --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
+              --tags 'Key=project,Value=udapeople            
+            else
             aws cloudformation update-stack  \
-              --stack-name udapeople-cloudfront-${OldWorkflowID} \
+              --stack-name udapeople-cloudfront-ef5554a \
               --template-body file://./.circleci/files/cloudfront.yml \
               --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
               --tags 'Key=project,Value=udapeople'
-            
+            fi            
             if [ -n "${OldWorkflowID}" ] && [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
               echo "Delete old infrastructure"

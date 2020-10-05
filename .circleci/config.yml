@@ -361,7 +361,8 @@ jobs:
               --template-body file://./.circleci/files/cloudfront.yml \
               --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
               --tags 'Key=project,Value=udapeople'
-            fi            
+            fi
+            echo "CloudFront stack updated"
             if [ -n "${OldWorkflowID}" ] && [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
               echo "Delete old infrastructure"

@@ -340,7 +340,7 @@ jobs:
             echo Stacks: "${STACKS}"
             aws cloudformation update-stack  \
               --stack-name udapeople-cloudfront-${OldWorkflowID} \
-              --template-file .circleci/files/cloudfront.yml \
+              --use-previous-template \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
             

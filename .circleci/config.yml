@@ -363,8 +363,9 @@ jobs:
               --tags 'Key=project,Value=udapeople'
             fi
             echo "CloudFront stack updated"
-            if -n "${OldWorkflowID}" 
+            if [ ! [ "${OldWorkflowID}" == "" ] ]
             then
+            echo "WorkflowID is empty"
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
               echo "Delete old infrastructure"

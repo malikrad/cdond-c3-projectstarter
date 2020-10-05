@@ -145,17 +145,6 @@ jobs:
           command: |
             yum -y install tar gzip
       - run:
-          name: Get OldWorkflowID and save it to https://memstash.io/
-          command: |
-            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
-            echo ${OldWorkflowID}  
-            if [ -n "$OldWorkflowID" ]
-            then
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data ${OldWorkflowID}  https://api.memstash.io/values/old_workflowID
-            else 
-            echo "No old infrastructure exists for UdaPeople"
-            fi            
-      - run:
           name: deploy backend infra
           command: |
             aws cloudformation deploy \
@@ -343,9 +332,7 @@ jobs:
           command: |
             set TERM=xterm
             export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --no-paginate --output text)
-            export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
             echo Old Workflow Id: "${OldWorkflowID}"
-            echo Stacks: "${STACKS}"
             if ! aws cloudformation describe-stacks --stack-name udapeople-cloudfront ;
             then
             echo "Stack doesn't exist"
@@ -363,6 +350,8 @@ jobs:
               --tags 'Key=project,Value=udapeople'
             fi
             echo "CloudFront stack updated"
+            if [ -n "$OldWorkflowID" ]
+            then
             if ! aws cloudformation describe-stacks --stack-name udapeople-frontend-${OldWorkflowID} ;
             then
               echo "Empty old S3 bucket and delete old frontend stack"
@@ -376,6 +365,7 @@ jobs:
             then
               echo "Delete old backend stack"
               aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}
+            fi
             fi
       - auto-destruct-env
       - slack/status:

@@ -363,9 +363,6 @@ jobs:
               --tags 'Key=project,Value=udapeople'
             fi
             echo "CloudFront stack updated"
-            if [ ! [ "${OldWorkflowID}" == "" ] ]
-            then
-            echo "WorkflowID is empty"
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
               echo "Delete old infrastructure"
@@ -375,7 +372,6 @@ jobs:
               fi
               aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
               aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}
-            fi
             fi
       - auto-destruct-env
       - slack/status:

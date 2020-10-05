@@ -353,7 +353,7 @@ jobs:
               --stack-name udapeople-cloudfront \
               --template-body file://./.circleci/files/cloudfront.yml \
               --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
-              --tags 'Key=project,Value=udapeople            
+              --tags 'Key=project,Value=udapeople'            
             else
             echo "Updat existing stack"
             aws cloudformation update-stack  \

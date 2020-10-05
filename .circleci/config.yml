@@ -334,15 +334,8 @@ jobs:
             set TERM=xterm
             export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --no-paginate --output text)
             echo Old Workflow Id: "${OldWorkflowID}"
-            if ! aws cloudformation describe-stacks --stack-name udapeople-cloudfront ;
-            then
-            echo "Stack doesn't exist"
-            aws cloudformation create-stack  \
-              --stack-name udapeople-cloudfront \
-              --template-body file://./.circleci/files/cloudfront.yml \
-              --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
-              --tags 'Key=project,Value=udapeople'            
-            else
+            if [ -n "$OldWorkflowID" ]
+            then        
             echo "Update existing stack"
             aws cloudformation update-stack  \
               --stack-name udapeople-cloudfront \
@@ -356,27 +349,24 @@ jobs:
             echo "Invalidation ID: ${INVALIDATION_ID}"
             aws cloudfront wait invalidation-completed --distribution-id $DISTRIBUTION_ID --id $INVALIDATION_ID
             echo "CloudFront Invalidation completed"
+            else
+            echo "Stack doesn't exist"
+            aws cloudformation create-stack  \
+              --stack-name udapeople-cloudfront \
+              --template-body file://./.circleci/files/cloudfront.yml \
+              --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
+              --tags 'Key=project,Value=udapeople'            
             fi            
             if [ -n "$OldWorkflowID" ]
             then
-            if ! aws cloudformation describe-stacks --stack-name udapeople-frontend-${OldWorkflowID} ;
-            then
-              echo "Old Frontend stack doesn't exist"
-            else
               echo "Empty old S3 bucket and delete old frontend stack"
               if aws s3api head-bucket --bucket udapeople-frontend-${OldWorkflowID}
               then
                 aws s3 rm s3://udapeople-frontend-${OldWorkflowID}/ --recursive
               fi
               aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
-            fi
-            if ! aws cloudformation describe-stacks --stack-name udapeople-backend-${OldWorkflowID} ;
-            then
-              echo "Old Backend stack doesn't exist"
-            else
               echo "Delete old backend stack"
               aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}
-            fi
             fi
       - auto-destruct-env
       - slack/status:

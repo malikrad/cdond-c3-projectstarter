@@ -371,6 +371,7 @@ jobs:
                 aws s3 rm s3://udapeople-frontend-${OldWorkflowID}/ --recursive
               fi
               aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
+            fi
             if ! aws cloudformation describe-stacks --stack-name udapeople-backend-${OldWorkflowID} ;
             then
               echo "Delete old backend stack"

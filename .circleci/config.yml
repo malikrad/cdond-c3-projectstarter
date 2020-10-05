@@ -335,6 +335,7 @@ jobs:
           command: |
             apk add --update curl
             apk add --update bash
+            apk add --update dash
             pip install awscli
       - add_ssh_keys:
           fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]

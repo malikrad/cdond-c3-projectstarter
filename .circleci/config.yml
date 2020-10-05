@@ -335,7 +335,6 @@ jobs:
           command: |
             apk add --update curl
             apk add --update bash
-            apk add --update dash
             pip install awscli
       - add_ssh_keys:
           fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
@@ -364,14 +363,17 @@ jobs:
               --tags 'Key=project,Value=udapeople'
             fi
             echo "CloudFront stack updated"
-            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+            if ! aws cloudformation describe-stacks --stack-name udapeople-frontend-${OldWorkflowID} ;
             then
-              echo "Delete old infrastructure"
+              echo "Empty old S3 bucket and delete old frontend stack"
               if aws s3api head-bucket --bucket udapeople-frontend-${OldWorkflowID}
               then
                 aws s3 rm s3://udapeople-frontend-${OldWorkflowID}/ --recursive
               fi
               aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
+            if ! aws cloudformation describe-stacks --stack-name udapeople-backend-${OldWorkflowID} ;
+            then
+              echo "Delete old backend stack"
               aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}
             fi
       - auto-destruct-env

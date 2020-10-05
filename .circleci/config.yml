@@ -326,8 +326,14 @@ jobs:
           fail_only: true 
                       
   deploy-cloudfront:
-    docker:
-      - image: amazon/aws-cli
+      - image: python:3.7-alpine3.11
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update curl
+            apk add --update bash
+            pip install awscli
     steps:
       - checkout
       - add_ssh_keys:
@@ -335,6 +341,7 @@ jobs:
       - run:
           name: Update cloudfront distribution
           command: |
+            set TERM=xterm
             export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --no-paginate --output text)
             export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
             echo Old Workflow Id: "${OldWorkflowID}"

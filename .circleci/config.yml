@@ -344,8 +344,6 @@ jobs:
             set TERM=xterm
             export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --no-paginate --output text)
             echo Old Workflow Id: "${OldWorkflowID}"
-            export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE --no-paginate --output text)
-            echo $STACKS
             if [ -n "${OldWorkflowID}" ]
             then
             echo "Updating existing CloudFront stack"
@@ -354,6 +352,12 @@ jobs:
               --template-body file://./.circleci/files/cloudfront.yml \
               --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
               --tags 'Key=project,Value=udapeople'
+            echo "CloudFront stack updated"
+            echo "Get CloudFront distribution ID"
+            export DistID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?DomainName=='udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}.s3.amazonaws.com']].Id" --output text)
+            echo "Distribution ID: $DistID"
+            echo "Creating invalidation using Distribution ID"
+            aws cloudfront create-invalidation --distribution-id $DistID --paths "/*"              
             else              
             echo "CloudFront stack doesn't exist"
             aws cloudformation create-stack  \
@@ -361,12 +365,6 @@ jobs:
               --template-body file://./.circleci/files/cloudfront.yml \
               --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
               --tags 'Key=project,Value=udapeople'            
-            echo "CloudFront stack updated"
-            echo "Get CloudFront distribution ID"
-            export DistID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?DomainName=='udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}.s3.amazonaws.com']].Id" --output text)
-            echo "Distribution ID: $DistID"
-            echo "Creating invalidation using Distribution ID"
-            aws cloudfront create-invalidation --distribution-id $DistID --paths "/*"
             fi
             if [ -n "${OldWorkflowID}" ]
             then

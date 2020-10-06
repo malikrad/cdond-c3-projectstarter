@@ -368,7 +368,7 @@ jobs:
             echo "Creating invalidation using Distribution ID"
             aws cloudfront create-invalidation --distribution-id $DistID --paths "/*"
             fi
-            if !($STACKS | grep $OldWorkflowID )
+            if [[ "${STACKS[@]}" =~ "$OldWorkflowID" ]]
             then
               echo "Empty old S3 bucket and delete old frontend stack"
               if aws s3api head-bucket --bucket udapeople-frontend-${OldWorkflowID}

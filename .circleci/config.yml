@@ -346,21 +346,21 @@ jobs:
             echo Old Workflow Id: "${OldWorkflowID}"
             export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE --no-paginate --output text)
             echo $STACKS
-            if !($STACKS | grep "udapeople-cloudfront" )
+            if ("${STACKS}" | grep "udapeople-cloudfront" )
             then
-            echo "CloudFront stack doesn't exist"
-            aws cloudformation create-stack  \
-              --stack-name udapeople-cloudfront \
-              --template-body file://./.circleci/files/cloudfront.yml \
-              --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
-              --tags 'Key=project,Value=udapeople'            
-            else
             echo "Updating existing CloudFront stack"
             aws cloudformation update-stack  \
               --stack-name udapeople-cloudfront \
               --template-body file://./.circleci/files/cloudfront.yml \
               --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
               --tags 'Key=project,Value=udapeople'
+            else              
+            echo "CloudFront stack doesn't exist"
+            aws cloudformation create-stack  \
+              --stack-name udapeople-cloudfront \
+              --template-body file://./.circleci/files/cloudfront.yml \
+              --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
+              --tags 'Key=project,Value=udapeople'            
             echo "CloudFront stack updated"
             echo "Get CloudFront distribution ID"
             export DistID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?DomainName=='udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}.s3.amazonaws.com']].Id" --output text)
@@ -375,12 +375,12 @@ jobs:
               then
                 aws s3 rm s3://udapeople-frontend-${OldWorkflowID}/ --recursive
               fi  
-              if !($STACKS | grep "udapeople-frontend-${OldWorkflowID}" )
+              if !("${STACKS}" | grep "udapeople-frontend-${OldWorkflowID}" )
               then
                 echo "Delete old frontend stack"
                 aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
               fi
-              if !($STACKS | grep "udapeople-backend-${OldWorkflowID}" )
+              if !("${STACKS}" | grep "udapeople-backend-${OldWorkflowID}" )
               then
                 echo "Delete old backend stack"              
                 aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}

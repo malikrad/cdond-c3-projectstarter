@@ -346,7 +346,7 @@ jobs:
             echo Old Workflow Id: "${OldWorkflowID}"
             export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE --no-paginate --output text)
             echo $STACKS
-            if ("${STACKS}" | grep "udapeople-cloudfront" )
+            if [ -n "${OldWorkflowID}" ]
             then
             echo "Updating existing CloudFront stack"
             aws cloudformation update-stack  \
@@ -368,23 +368,14 @@ jobs:
             echo "Creating invalidation using Distribution ID"
             aws cloudfront create-invalidation --distribution-id $DistID --paths "/*"
             fi
-            if [[ "${STACKS[@]}" =~ "$OldWorkflowID" ]]
+            if [ -n "${OldWorkflowID}" ]
             then
               echo "Empty old S3 bucket and delete old frontend stack"
-              if aws s3api head-bucket --bucket udapeople-frontend-${OldWorkflowID}
-              then
-                aws s3 rm s3://udapeople-frontend-${OldWorkflowID}/ --recursive
-              fi  
-              if !("${STACKS}" | grep "udapeople-frontend-${OldWorkflowID}" )
-              then
-                echo "Delete old frontend stack"
-                aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
-              fi
-              if !("${STACKS}" | grep "udapeople-backend-${OldWorkflowID}" )
-              then
-                echo "Delete old backend stack"              
-                aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}
-              fi
+              aws s3 rm s3://udapeople-frontend-${OldWorkflowID}/ --recursive
+              echo "Delete old frontend stack"
+              aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
+              echo "Delete old backend stack"              
+              aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}
             fi
       - auto-destruct-env
       - slack/status:

@@ -343,10 +343,8 @@ jobs:
           command: |
             set TERM=xterm
             export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --no-paginate --output text)
-            export STACKS=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate --output text)
             echo Old Workflow Id: "${OldWorkflowID}"
-            echo Stacks: "${STACKS}"
-            if ! aws cloudformation describe-stacks --stack-name udapeople-cloudfront ;
+            if !(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE | grep "udapeople-cloudfront" )
             then
             echo "Stack doesn't exist"
             aws cloudformation create-stack  \
@@ -368,7 +366,7 @@ jobs:
             echo "Create invalidation using Distribution ID"
             aws cloudfront create-invalidation --distribution-id $DistID --paths "/*"
             fi
-            if ! aws cloudformation describe-stacks --stack-name udapeople-frontend-${OldWorkflowID} ;
+            if [ -n $OldWorkflowID]
             then
               echo "Empty old S3 bucket and delete old frontend stack"
               if aws s3api head-bucket --bucket udapeople-frontend-${OldWorkflowID}

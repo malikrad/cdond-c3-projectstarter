@@ -30,7 +30,6 @@ commands:
           when: on_fail
           name: Install dependencies
           command: |
-            yum -y install nodejs
       - checkout
       - run:
           when: on_fail
@@ -52,14 +51,9 @@ commands:
           when: on_fail
           name: Load migration status from https://memstash.io/ and revert migrations if necessary
           command: |
-            MIGRATION_STATUS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/migration_completion)
-            echo ${MIGRATION_STATUS}
-            if [[ ${MIGRATION_STATUS} == 1 ]]
-            then
-              cd backend
-              npm install
-              npm run migrations:revert
-            fi
+            cd backend
+            npm install
+            npm run migrations:revert           
 
 jobs:
   build-frontend:

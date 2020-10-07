@@ -131,7 +131,6 @@ jobs:
           command: |
             cd backend
             npm i
-            npm audit fix --audit-level=critical
       - slack/status:
           fail_only: true
             

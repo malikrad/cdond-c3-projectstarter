@@ -30,12 +30,12 @@ commands:
           when: on_fail
           name: Install dependencies
           command: |
-            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
       - checkout
       - run:
           name: Add values to backend/env file
           command: |
+            mkdir backend
             echo "NODE_ENV=development" >> backend/.env
             echo "VERSION=1" >> backend/.env
             echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" >> backend/.env

@@ -268,7 +268,7 @@ jobs:
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
-            export API_URL="http://${BACKEND_IP}:3030"
+            #export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL=$API_URL" >> frontend/.env
             echo "${API_URL}"
       - run:
@@ -351,15 +351,7 @@ jobs:
               --template-body file://./.circleci/files/cloudfront.yml \
               --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
               --tags 'Key=project,Value=udapeople'
-            echo "CloudFront stack updated"
-            echo "Get CloudFront distribution ID"
-            export CFDomainName=udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}.s3.amazonaws.com
-            echo "CFDomainName" 
-            echo $CFDOmainName
-            export DistID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?DomainName=='"${CFDomainName}"']].Id" --output text)
-            echo "Distribution ID: $DistID"
-            echo "Creating invalidation using Distribution ID"
-            aws cloudfront create-invalidation --distribution-id $DistID --paths "/*"              
+            echo "CloudFront stack updated"       
             else              
             echo "CloudFront stack doesn't exist"
             aws cloudformation create-stack  \
@@ -406,6 +398,11 @@ workflows:
             branches:
               only:
                 - master
+      - run-migrations: 
+          requires: [deploy-backend]
+          filters:
+            branches:
+              only: master      
       - deploy-frontend:
           requires: [deploy-backend]
           filters:

@@ -33,6 +33,7 @@ commands:
             yum -y install nodejs
       - checkout
       - run:
+          when: on_fail
           name: Add values to backend/env file
           command: |
             mkdir backend

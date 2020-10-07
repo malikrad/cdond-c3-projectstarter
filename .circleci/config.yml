@@ -24,6 +24,8 @@ commands:
 
   revert-migration:
     description: Revert the last migration
+    docker:
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -35,7 +37,7 @@ commands:
             if [[ ${DATA_MIGRATIONSTATUS} == 1 ]]
             then
               pwd
-              cd /home/ubuntu/backend
+              cd backend
               npm i
               npm audit fix --audit-level=critical --force
               npm run migrations:revert

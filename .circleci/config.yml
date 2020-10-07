@@ -33,7 +33,20 @@ commands:
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
       - checkout
-      - create-env-file
+      - run:
+          name: Add values to backend/env file
+          command: |
+            echo "NODE_ENV=development" >> backend/.env
+            echo "VERSION=1" >> backend/.env
+            echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" >> backend/.env
+            echo "TYPEORM_MIGRATIONS_DIR=${TYPEORM_MIGRATIONS_DIR}" >> backend/.env
+            echo "TYPEORM_ENTITIES=${TYPEORM_ENTITIES}" >> backend/.env
+            echo "TYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}" >> backend/.env
+            echo "TYPEORM_HOST=${TYPEORM_HOST}" >> backend/.env
+            echo "TYPEORM_PORT=${TYPEORM_PORT}" >> backend/.env
+            echo "TYPEORM_USERNAME=${TYPEORM_USERNAME}" >> backend/.env
+            echo "TYPEORM_PASSWORD=${TYPEORM_PASSWORD}" >> backend/.env
+            echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" >> backend/.env
       - run:
           when: on_fail
           name: Load migration status from https://memstash.io/ and revert migrations if necessary
@@ -317,11 +330,9 @@ jobs:
                   --filters Name=instance-state-name,Values=running Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} \
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
-            echo ${BACKEND_IP}
             EC2_URL="http://${BACKEND_IP}:3030/api/status"
-            echo ${EC2_URL}
             curl ${EC2_URL}
-            if curl -s ${APP_URL} | grep "ok"
+            if curl -s ${EC2_URL} | grep " not ok"
             then
               return 0
             else

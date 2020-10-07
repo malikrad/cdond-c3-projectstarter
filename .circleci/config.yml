@@ -26,10 +26,6 @@ commands:
   revert-migration:
     description: Revert the last migration if smoke tests are failing in the current workflow
     steps:
-      - run:
-          when: on_fail
-          name: Install dependencies
-          command: |
       - checkout
       - run:
           when: on_fail

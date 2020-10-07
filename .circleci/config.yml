@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@3.4.2
+  python: circleci/python@1.0.0  
 
 commands:
   auto-destruct-env:
@@ -23,27 +24,28 @@ commands:
           when: on_fail
 
   revert-migration:
-    description: Revert the latest migration
+    description: Revert the last migration if smoke tests are failing in the current workflow
     steps:
       - run:
-          name: Get the backend IP of EC2 instance from https://memstash.io/
-          command: |
-            BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/backend_ip)
-            echo ${BACKEND_IP}
-            cd .circleci/ansible/
-            echo "[all]" > ./inventory.txt
-            echo ${BACKEND_IP} >> ./inventory.txt
-            cat ./inventory.txt
           when: on_fail
-      - add_ssh_keys:
-          fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
+          name: Install dependencies
+          command: |
+            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
+            yum -y install nodejs
+      - checkout
+      - create-env-file
       - run:
-          name: Revert the last migration
-          command: |
-            printenv >> ./backend/.env
-            cd .circleci/ansible/
-            ansible-playbook -i ./inventory.txt db_rollback.yml
           when: on_fail
+          name: Load migration status from https://memstash.io/ and revert migrations if necessary
+          command: |
+            MIGRATION_STATUS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/migration_completion)
+            echo ${MIGRATION_STATUS}
+            if [[ ${MIGRATION_STATUS} == 1 ]]
+            then
+              cd backend
+              npm install
+              npm run migrations:revert
+            fi
 
 jobs:
   build-frontend:
@@ -225,6 +227,7 @@ jobs:
             echo "TYPEORM_PASSWORD=${TYPEORM_PASSWORD}" >> backend/.env
             echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" >> backend/.env
             echo "ENVIRONMENT=${ENVIRONMENT}" >> backend/.env
+            cat backend/.env
       - run:
           name: Configure server
           command: |

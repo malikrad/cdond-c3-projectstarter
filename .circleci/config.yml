@@ -23,25 +23,27 @@ commands:
           when: on_fail
 
   revert-migration:
-    description: Revert the last migration
-    docker:
-      - image: circleci/node:13.8.0
+    description: Revert the latest migration
     steps:
-      - checkout
       - run:
-          name: Revert migrations
-          when: on_fail
+          name: Get the backend IP of EC2 instance from https://memstash.io/
           command: |
-            DATA_MIGRATIONSTATUS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/migration_completion_<< pipeline.id >>)
-            echo ${DATA_MIGRATIONSTATUS}
-            if [[ ${DATA_MIGRATIONSTATUS} == 1 ]]
-            then
-              pwd
-              cd backend
-              npm i
-              npm audit fix --audit-level=critical --force
-              npm run migrations:revert
-            fi
+            BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/backend_ip)
+            echo ${BACKEND_IP}
+            cd .circleci/ansible/
+            echo "[all]" > ./inventory.txt
+            echo ${BACKEND_IP} >> ./inventory.txt
+            cat ./inventory.txt
+          when: on_fail
+      - add_ssh_keys:
+          fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
+      - run:
+          name: Revert the last migration
+          command: |
+            printenv >> ./backend/.env
+            cd .circleci/ansible/
+            ansible-playbook -i ./inventory.txt db_rollback.yml
+          when: on_fail
 
 jobs:
   build-frontend:
@@ -175,12 +177,13 @@ jobs:
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project="${CIRCLE_WORKFLOW_ID:0:7}"
       - run:
-          name: Add Backend EC2 Instance IP to inventory
+          name: Add Backend EC2 Instance IP to inventory and save to memstash
           command: |
-            aws ec2 describe-instances \
+            export BACKEND_IP=aws ec2 describe-instances \
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text >> .circleci/ansible/inventory.txt
+            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data ${BACKEND_IP} https://api.memstash.io/values/backend_ip            
       - persist_to_workspace:
           root: ~/
           paths:
@@ -246,7 +249,7 @@ jobs:
             npm run migrations > migrations.txt            
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}"  --request PUT \
               --data $( grep -c "No migrations are pending" migrations.txt ) \
-              https://api.memstash.io/values/migration_completion_<< pipeline.id >>
+              https://api.memstash.io/values/migration_completion
             cat migrations.txt
       - slack/status:
           fail_only: true

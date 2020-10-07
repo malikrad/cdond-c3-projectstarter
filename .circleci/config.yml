@@ -410,7 +410,7 @@ workflows:
               only:
                 - master          
       - smoke-test:
-          requires: [deploy-frontend]
+          requires: [deploy-frontend, deploy-backend]
           filters:
             branches:
               only:

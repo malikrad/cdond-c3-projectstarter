@@ -2,9 +2,9 @@
   shell: |
     export CIRCLE_WORKFLOW_ID="{{ CIRCLE_WORKFLOW_ID }}"
     echo CIRCLE_WORKFLOW_ID=${CIRCLE_WORKFLOW_ID}
-    DB_MIGRATION_STATUS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/dbmigration_status)
-    echo ${DB_MIGRATION_STATUS}
-    if [[ ${DB_MIGRATION_STATUS} == 1 ]]
+    DBMIGRATION_STATUS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/migration_completion)
+    echo ${DBMIGRATION_STATUS}
+    if [[ ${DBMIGRATION_STATUS} == 1 ]]
     then
       cd /home/ubuntu/backend
       npm run migrations:revert

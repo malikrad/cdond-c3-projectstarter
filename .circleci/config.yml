@@ -371,25 +371,26 @@ jobs:
           command: |
             set TERM=xterm
             export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --no-paginate --output text)
+            export STACK_LIST=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE DELETE_FAILED --no-paginate --output text)
             echo Old Workflow Id: "${OldWorkflowID}"
+            echo Stack List: "${STACK_LIST}"
             if [ -n "${OldWorkflowID}" ]
             then
-            echo "Updating existing CloudFront stack"
+            echo "Update existing CloudFront stack"
             aws cloudformation update-stack  \
               --stack-name udapeople-cloudfront \
               --template-body file://./.circleci/files/cloudfront.yml \
               --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
               --tags 'Key=project,Value=udapeople'
-            echo "CloudFront stack updated"       
             else              
-            echo "CloudFront stack doesn't exist"
+            echo "Create CloudFront stack"
             aws cloudformation create-stack  \
               --stack-name udapeople-cloudfront \
               --template-body file://./.circleci/files/cloudfront.yml \
               --parameters ParameterKey=WorkflowID,ParameterValue=${CIRCLE_WORKFLOW_ID:0:7} \
               --tags 'Key=project,Value=udapeople'            
             fi
-            if [ -n "${OldWorkflowID}" ]
+            if [[ "${STACK_LIST[@]}" =~ "${OldWorkflowID}" ]]
             then
               echo "Empty old S3 bucket and delete old frontend stack"
               aws s3 rm s3://udapeople-frontend-${OldWorkflowID}/ --recursive

@@ -8,6 +8,9 @@ commands:
   auto-destruct-env:
     description: Destroy the entire infrastructure
     steps:
+      - run: Set TERM in order to avoid "WARNING: terminal is not fully functional"
+          command: |
+            set TERM=xterm 
       - run:
           name: Delete all files from the current S3 bucket
           command: |
@@ -325,13 +328,11 @@ jobs:
       - run:
           name: Smoke test backend
           command: |
-            pwd
             export BACKEND_IP=$(aws ec2 --region us-east-1 describe-instances \
                   --filters Name=instance-state-name,Values=running Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} \
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
             EC2_URL="http://${BACKEND_IP}:3030/api/status"
-            curl ${EC2_URL}
             if curl -s ${EC2_URL} | grep " not ok"
             then
               return 0

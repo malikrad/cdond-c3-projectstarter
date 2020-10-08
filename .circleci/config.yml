@@ -314,8 +314,9 @@ jobs:
           command: |
             apk add --update curl
             apk add --update bash
+            apk add --no-cache openssh-client
             pip install awscli
-            curl -sL https://rpm.nodesource.com/setup_12.x | bash -
+            curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
             apk add --update nodejs npm 
       - run:
           name: Smoke test backend

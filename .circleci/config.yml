@@ -307,17 +307,17 @@ jobs:
 
   smoke-test:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: circleci/node:13.8.0
     steps:
       - run:
           name: Install dependencies
           command: |
-            apk add --update curl
-            apk add --update bash
-            apk add --no-cache openssh-client
-            pip install awscli
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
             curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-            apk add --update nodejs npm 
+            sudo apt install nodejs
+            sudo apt install npm
       - run:
           name: Smoke test backend
           command: |

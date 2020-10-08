@@ -224,7 +224,6 @@ jobs:
             tar -czvf ../../backend.tar.gz ../../backend
             ansible-playbook -i inventory.txt main.yml
             pwd
-            ls backend
       - auto-destruct-env
       - slack/status:
           fail_only: true
@@ -293,8 +292,7 @@ jobs:
           command: |
             aws s3 cp ./frontend/dist s3://udapeople-frontend-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive  
             pwd
-            cd ./backend
-      - revert-migration
+       - revert-migration
       - auto-destruct-env
       - slack/status:
           fail_only: true

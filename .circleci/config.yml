@@ -156,7 +156,8 @@ jobs:
           command: |
             cd backend
             npm i
-            npm audit fix --audit-level=critical            
+            npm audit fix --audit-level=critical
+            set TERM=xterm    
       - slack/status:
           fail_only: true
             
@@ -322,9 +323,6 @@ jobs:
     steps:
       - checkout
       - create-env-file   
-      - run: Set TERM in order to avoid "WARNING: terminal is not fully functional"
-          command: |
-            set TERM=xterm      
       - run:
           name: Smoke test backend
           command: |

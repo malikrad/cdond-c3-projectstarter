@@ -241,6 +241,10 @@ jobs:
               --data $( grep -c "No migrations are pending" migrations.txt ) \
               https://api.memstash.io/values/migration_completion
             cat migrations.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/backend/            
       - slack/status:
           fail_only: true
 

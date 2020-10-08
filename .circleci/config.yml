@@ -8,9 +8,6 @@ commands:
   auto-destruct-env:
     description: Destroy the entire infrastructure
     steps:
-      - run: Set TERM in order to avoid "WARNING: terminal is not fully functional"
-          command: |
-            set TERM=xterm 
       - run:
           name: Delete all files from the current S3 bucket
           command: |
@@ -324,7 +321,10 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - create-env-file    
+      - create-env-file   
+      - run: Set TERM in order to avoid "WARNING: terminal is not fully functional"
+          command: |
+            set TERM=xterm      
       - run:
           name: Smoke test backend
           command: |

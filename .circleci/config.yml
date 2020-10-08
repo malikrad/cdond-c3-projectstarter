@@ -34,13 +34,14 @@ commands:
             pwd
             curl -sL https://deb.nodesource.com/setup_12.x -o nodesource_setup.sh
             bash nodesource_setup.sh
-            apt install -y nodejs
-            apt install -y npm
+            sudo apt install -y nodejs
+            sudo apt install -y npm
             nodejs -v
       - run:
           when: on_fail
           name: Add values to backend/env file
           command: |
+            pwd
             mkdir backend
             echo "NODE_ENV=development" >> backend/.env
             echo "VERSION=1" >> backend/.env
@@ -327,6 +328,7 @@ jobs:
       - run:
           name: Smoke test backend
           command: |
+            pwd
             export BACKEND_IP=$(aws ec2 --region us-east-1 describe-instances \
                   --filters Name=instance-state-name,Values=running Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} \
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
@@ -342,6 +344,7 @@ jobs:
       - run:
           name: Smoke test frontend
           command: |
+            pwd
             APP_URL="http://udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employee"
             if curl -s ${APP_URL} | grep "Welcome"
             then
@@ -349,7 +352,6 @@ jobs:
             else
               return 1
             fi
-            pwd
       - revert-migration
       - auto-destruct-env
       - slack/status:

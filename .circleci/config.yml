@@ -28,16 +28,6 @@ commands:
     steps:
       - checkout
       - run:
-          when: on_fail      
-          name: Install dependencies
-          command: |   
-            pwd
-            curl -sL https://deb.nodesource.com/setup_12.x -o nodesource_setup.sh
-            bash nodesource_setup.sh
-            sudo apt install -y nodejs
-            sudo apt install -y npm
-            nodejs -v
-      - run:
           when: on_fail
           name: Add values to backend/env file
           command: |
@@ -325,6 +315,7 @@ jobs:
             apk add --update curl
             apk add --update bash
             pip install awscli
+            apk add --update nodejs npm 
       - run:
           name: Smoke test backend
           command: |

@@ -315,6 +315,7 @@ jobs:
             apk add --update curl
             apk add --update bash
             pip install awscli
+            curl -sL https://rpm.nodesource.com/setup_12.x | bash -
             apk add --update nodejs npm 
       - run:
           name: Smoke test backend

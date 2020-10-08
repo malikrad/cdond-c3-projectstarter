@@ -23,16 +23,47 @@ commands:
             aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
 
+  create-env-file:
+    description: Command used for creating env file
+    steps:
+      - run:
+          name: Add env var t env file
+          command: |
+            echo "NODE_ENV=development" >> backend/.env
+            echo "VERSION=1" >> backend/.env
+            echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" >> backend/.env
+            echo "TYPEORM_MIGRATIONS_DIR=${TYPEORM_MIGRATIONS_DIR}" >> backend/.env
+            echo "TYPEORM_ENTITIES=${TYPEORM_ENTITIES}" >> backend/.env
+            echo "TYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}" >> backend/.env
+            echo "TYPEORM_HOST=${TYPEORM_HOST}" >> backend/.env
+            echo "TYPEORM_PORT=${TYPEORM_PORT}" >> backend/.env
+            echo "TYPEORM_USERNAME=${TYPEORM_USERNAME}" >> backend/.env
+            echo "TYPEORM_PASSWORD=${TYPEORM_PASSWORD}" >> backend/.env
+            echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" >> backend/.env  
+  
   revert-migration:
     description: Revert the last migration if smoke tests are failing in the current workflow
     steps:
-      - checkout
       - run:
           when: on_fail
-          name: Revert migrations if necessary
+          name: Install dependencies
           command: |
-            pwd
-            npm run migrations:revert           
+            curl -sL https://rpm.nodesource.com/setup_12.x | bash -
+            yum -y install nodejs
+      - checkout
+      - create-env-file
+      - run:
+          when: on_fail
+          name: Load migration status from https://memstash.io/ and revert migrations if necessary
+          command: |
+            MIGRATION_STATUS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request GET https://api.memstash.io/values/migration_completion)
+            echo ${MIGRATION_STATUS}
+            if [[ ${MIGRATION_STATUS} == 1 ]]
+            then
+              cd backend
+              npm install
+              npm run migrations:revert
+            fi         
 
 jobs:
   build-frontend:
@@ -205,31 +236,7 @@ jobs:
             apk add --update tar gzip ansible nodejs npm
             pip install awscli
             pwd
-      - run:
-          name: Add env file
-          command: |
-            echo "Present working directory"
-            pwd 
-            echo "TYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}"
-            echo "TYPEORM_ENTITIES=${TYPEORM_ENTITIES}"
-            echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" 
-            echo "TYPEORM_HOST=${TYPEORM_HOST}" 
-            echo "TYPEORM_PORT=${TYPEORM_PORT}"
-            echo "TYPEORM_USERNAME=${TYPEORM_USERNAME}" 
-            echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" 
-            echo "TYPEORM_PASSWORD=${TYPEORM_PASSWORD}"
-            echo "ENVIRONMENT=${ENVIRONMENT}"
-            echo "TYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}" >> backend/.envconf
-            echo "TYPEORM_ENTITIES=${TYPEORM_ENTITIES}" >> backend/.envconf
-            echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" >> backend/.envconf
-            echo "TYPEORM_HOST=${TYPEORM_HOST}" >> backend/.envconf
-            echo "TYPEORM_PORT=${TYPEORM_PORT}" >> backend/.envconf
-            echo "TYPEORM_USERNAME=${TYPEORM_USERNAME}" >> backend/.envconf
-            echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" >> backend/.envconf
-            echo "TYPEORM_PASSWORD=${TYPEORM_PASSWORD}" >> backend/.envconf            
-            echo "ENVIRONMENT=${ENVIRONMENT}" >> backend/.envconf
-            cat backend/.envconf
-            pwd
+      - create-env-file
       - run:
           name: Configure server
           command: |
@@ -238,6 +245,7 @@ jobs:
             tar -czvf ../../backend.tar.gz ../../backend
             ansible-playbook -i inventory.txt main.yml
             pwd
+      - revert-migration      
       - auto-destruct-env
       - slack/status:
           fail_only: true
@@ -247,6 +255,7 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - create-env-file      
       - run:
           name: Run migrations and save status to https://memstash.io/
           command: |
@@ -258,11 +267,7 @@ jobs:
               --data $( grep -c "No migrations are pending" migrations.txt ) \
               https://api.memstash.io/values/migration_completion
             cat migrations.txt
-            pwd
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/backend/migrations.txt            
+            pwd      
       - slack/status:
           fail_only: true
 
@@ -313,20 +318,10 @@ jobs:
 
   smoke-test:
     docker:
-      - image: sitapati/docker-alpine-python-node
+      - image: amazon/aws-cli
     steps:
-      - add_ssh_keys:
-          fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
-      - attach_workspace:
-          at: ~/    
-      - run:
-          name: Install dependencies
-          command: |
-            pwd
-            npm install        
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install       
+      - checkout
+      - create-env-file    
       - run:
           name: Smoke test backend
           command: |

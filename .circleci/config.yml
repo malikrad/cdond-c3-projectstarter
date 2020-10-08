@@ -28,11 +28,12 @@ commands:
     steps:
       - checkout
       - run:
+          when: on_fail      
           name: Install dependencies
           command: |      
-            curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-            sudo apt -y upgrade
-            sudo apt install -y nodejs
+            curl -sL https://deb.nodesource.com/setup_12.x | -E bash 
+            apt -y upgrade
+            apt install -y nodejs
       - run:
           when: on_fail
           name: Add values to backend/env file

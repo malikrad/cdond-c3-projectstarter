@@ -31,9 +31,11 @@ commands:
           when: on_fail      
           name: Install dependencies
           command: |      
-            curl -sL https://deb.nodesource.com/setup_12.x | -E bash 
-            apt -y upgrade
+            curl -sL https://deb.nodesource.com/setup_12.x -o nodesource_setup.sh
+            bash nodesource_setup.sh
             apt install -y nodejs
+            apt install -y npm
+            nodejs -v
       - run:
           when: on_fail
           name: Add values to backend/env file

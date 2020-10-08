@@ -29,27 +29,8 @@ commands:
       - checkout
       - run:
           when: on_fail
-          name: Add values to backend/env file
-          command: |
-            pwd
-            mkdir backend
-            echo "NODE_ENV=development" >> backend/.env
-            echo "VERSION=1" >> backend/.env
-            echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" >> backend/.env
-            echo "TYPEORM_MIGRATIONS_DIR=${TYPEORM_MIGRATIONS_DIR}" >> backend/.env
-            echo "TYPEORM_ENTITIES=${TYPEORM_ENTITIES}" >> backend/.env
-            echo "TYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}" >> backend/.env
-            echo "TYPEORM_HOST=${TYPEORM_HOST}" >> backend/.env
-            echo "TYPEORM_PORT=${TYPEORM_PORT}" >> backend/.env
-            echo "TYPEORM_USERNAME=${TYPEORM_USERNAME}" >> backend/.env
-            echo "TYPEORM_PASSWORD=${TYPEORM_PASSWORD}" >> backend/.env
-            echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" >> backend/.env
-      - run:
-          when: on_fail
           name: Load migration status from https://memstash.io/ and revert migrations if necessary
           command: |
-            cd backend
-            npm install
             npm run migrations:revert           
 
 jobs:
@@ -315,9 +296,20 @@ jobs:
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
-            curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-            sudo apt install nodejs
-            sudo apt install npm
+            pwd
+            cd backend
+            npm install
+            echo "NODE_ENV=development" >> backend/.env
+            echo "VERSION=1" >> backend/.env
+            echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" >> backend/.env
+            echo "TYPEORM_MIGRATIONS_DIR=${TYPEORM_MIGRATIONS_DIR}" >> backend/.env
+            echo "TYPEORM_ENTITIES=${TYPEORM_ENTITIES}" >> backend/.env
+            echo "TYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}" >> backend/.env
+            echo "TYPEORM_HOST=${TYPEORM_HOST}" >> backend/.env
+            echo "TYPEORM_PORT=${TYPEORM_PORT}" >> backend/.env
+            echo "TYPEORM_USERNAME=${TYPEORM_USERNAME}" >> backend/.env
+            echo "TYPEORM_PASSWORD=${TYPEORM_PASSWORD}" >> backend/.env
+            echo "TYPEORM_DATABASE=${TYPEORM_DATABASE}" >> backend/.env            
       - run:
           name: Smoke test backend
           command: |

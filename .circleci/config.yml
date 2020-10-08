@@ -333,9 +333,9 @@ jobs:
             EC2_URL="http://${BACKEND_IP}:3030/api/status"
             if curl -s ${EC2_URL} | grep " not ok"
             then
-              return 0
+              exit 0
             else
-              return 1
+              exit 1
             fi            
       - run:
           name: Smoke test frontend
@@ -344,9 +344,9 @@ jobs:
             APP_URL="http://udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employee"
             if curl -s ${APP_URL} | grep "Welcome"
             then
-              return 0
+              exit 0
             else
-              return 1
+              exit 1
             fi
       - revert-migration
       - auto-destruct-env

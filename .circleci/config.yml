@@ -30,7 +30,8 @@ commands:
       - run:
           when: on_fail      
           name: Install dependencies
-          command: |      
+          command: |   
+            pwd
             curl -sL https://deb.nodesource.com/setup_12.x -o nodesource_setup.sh
             bash nodesource_setup.sh
             apt install -y nodejs
@@ -348,6 +349,7 @@ jobs:
             else
               return 1
             fi
+            pwd
       - revert-migration
       - auto-destruct-env
       - slack/status:

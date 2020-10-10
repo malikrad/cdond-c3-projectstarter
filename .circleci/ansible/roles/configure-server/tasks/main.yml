@@ -1,8 +1,7 @@
 ---
-- name: "install node 12.X"
+- name: "Install node version 12.x"
   shell: |
     curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-    sudo apt -y upgrade
     sudo apt install -y nodejs
 
 - name: "Install pm2"
@@ -12,4 +11,3 @@
     global: yes
     production: yes
     state: present
-

@@ -24,11 +24,11 @@ commands:
             aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
 
-  create-env-file:
+  write-envvar-file:
     description: Command used for creating env file
     steps:
       - run:
-          name: Add env var t env file
+          name: Write env var file
           command: |
             echo "NODE_ENV=development" >> backend/.env
             echo "VERSION=1" >> backend/.env
@@ -52,7 +52,7 @@ commands:
             curl -sL https://rpm.nodesource.com/setup_12.x | bash -
             yum -y install nodejs
       - checkout
-      - create-env-file
+      - write-envvar-file
       - run:
           when: on_fail
           name: Load migration status from https://memstash.io/ and revert migrations if necessary
@@ -256,7 +256,7 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - create-env-file      
+      - write-envvar-file      
       - run:
           name: Run migrations and save status to https://memstash.io/
           command: |
@@ -353,7 +353,7 @@ jobs:
       - slack/status:
           fail_only: true 
                       
-  deploy-cloudfront:
+  deploy-or-update-cloudfront:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -444,7 +444,7 @@ workflows:
             branches:
               only:
                 - master
-      - deploy-cloudfront:
+      - deploy-or-update-cloudfront:
           requires: [smoke-test]
           filters:
             branches:

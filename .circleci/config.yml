@@ -237,7 +237,7 @@ jobs:
             apk add --update tar gzip ansible nodejs npm
             pip install awscli
             pwd
-      - create-env-file
+      - write-envvar-file
       - run:
           name: Configure server
           command: |

@@ -1,5 +1,4 @@
 --
-
 - name: "Copy backend files to remote server"
   copy:
     dest: /home/ubuntu/

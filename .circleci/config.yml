@@ -163,7 +163,11 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      - checkout   
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum -y install tar gzip      
       - run:
           name: deploy backend infra
           command: |

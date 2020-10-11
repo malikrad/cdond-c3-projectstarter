@@ -219,12 +219,10 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            pwd
             apk add --update tar gzip ansible nodejs npm curl
             apk add --no-cache openssh-client
             apk add --no-cache --upgrade bash
             pip install awscli
-            pwd
       - add_ssh_keys:
           fingerprints: ["0a:ab:9c:78:ab:04:4e:29:a7:dc:63:62:36:ad:c8:c4"]
       - attach_workspace:
@@ -239,11 +237,8 @@ jobs:
       - run:
           name: Configure server
           command: |
-            pwd
             cd .circleci/ansible
-            tar -czvf ../../backend.tar.gz ../../backend
             ansible-playbook -i inventory.txt main.yml
-            pwd
       - revert-migration      
       - auto-destruct-env
       - slack/status:
@@ -304,12 +299,10 @@ jobs:
             npm i
             npm run build      
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID}".tar.gz dist
-            pwd
       - run: 
           name: Copy built frontend files to the S3 bucket
           command: |
             aws s3 cp ./frontend/dist s3://udapeople-frontend-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive  
-            pwd
       - revert-migration
       - auto-destruct-env
       - slack/status:

@@ -1,25 +1,29 @@
----
+--
 
-- name: Copy files from circleci to server
+- name: "Copy backend files to remote server"
   copy:
-    src: /root/project/backend.tar.gz
     dest: /home/ubuntu/
+    src: /root/project/backend.tar.gz
 
-- name: Unzip the project files
+- name: "Unzip backend files"
   shell: |
     cd /home/ubuntu
     mkdir backend
     tar -xzvf backend.tar.gz -C .
     
-- name: Build node service
+- name: "Build npm packages"
   shell: |
     cd /home/ubuntu/backend
+    sudo npm cache clean -f
+    sudo npm install -g n
+    sudo n stable
+    PATH="$PATH"
     npm i
     npm run build
-    npm run prestart:prod
-
-- name: Run pm2 
+- name: "Run pm2 daemon"
   shell: |
     cd /home/ubuntu/backend
     ls
-    pm2 start npm -- run "start:prod"
+    pm2 start npm -- run "start:dev"
+#   pm2 start -x -i 4 --name "app" ./dist/main.js
+

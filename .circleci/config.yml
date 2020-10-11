@@ -27,9 +27,9 @@ commands:
     description: Command used for creating env file
     steps:
       - run:
-          name: Add env var t env file
+          name: Add env vars to env file
           command: |
-            echo "NODE_ENV=production" >> backend/.env
+            echo "NODE_ENV=development" >> backend/.env
             echo "VERSION=1" >> backend/.env
             echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" >> backend/.env
             echo "TYPEORM_MIGRATIONS_DIR=${TYPEORM_MIGRATIONS_DIR}" >> backend/.env

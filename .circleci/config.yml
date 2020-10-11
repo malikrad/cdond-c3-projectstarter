@@ -2,7 +2,6 @@ version: 2.1
 
 orbs:
   slack: circleci/slack@3.4.2
-  python: circleci/python@1.0.0  
 
 commands:
   auto-destruct-env:
@@ -24,7 +23,7 @@ commands:
             aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
 
-  create-env-file:
+  write-envvars-file:
     description: Command used for creating env file
     steps:
       - run:
@@ -52,7 +51,7 @@ commands:
             curl -sL https://rpm.nodesource.com/setup_12.x | bash -
             yum -y install nodejs
       - checkout
-      - create-env-file
+      - write-envvars-file
       - run:
           when: on_fail
           name: Load migration status from https://memstash.io/ and revert migrations if necessary
@@ -62,7 +61,7 @@ commands:
             if [[ ${DBMIGRATION_FLAG} == 1 ]]
             then
               cd backend
-              npm install
+              npm i
               npm run migrations:revert
             fi         
 jobs:
@@ -236,7 +235,7 @@ jobs:
             apk add --update tar gzip ansible nodejs npm
             pip install awscli
             pwd
-      - create-env-file
+      - write-envvars-file
       - run:
           name: Configure server
           command: |
@@ -255,7 +254,7 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - create-env-file      
+      - write-envvars-file      
       - run:
           name: Run migrations and save status to https://memstash.io/
           command: |
@@ -321,7 +320,7 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - create-env-file   
+      - write-envvars-file 
       - run:
           name: Smoke test backend
           command: |
@@ -329,7 +328,9 @@ jobs:
                   --filters Name=instance-state-name,Values=running Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} \
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
+            echo "Backend IP: ${BACKEND_IP}"      
             EC2_URL="http://${BACKEND_IP}:3030/api/status"
+            curl -s ${EC2_URL}
             if curl -s ${EC2_URL} | grep "ok"
             then
               exit 0

@@ -24,13 +24,13 @@ commands:
             aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
 
-  write-envvar-file:
+  create-env-file:
     description: Command used for creating env file
     steps:
       - run:
-          name: Write env var file
+          name: Add env var t env file
           command: |
-            echo "NODE_ENV=production" >> backend/.env
+            echo "NODE_ENV=development" >> backend/.env
             echo "VERSION=1" >> backend/.env
             echo "TYPEORM_CONNECTION=${TYPEORM_CONNECTION}" >> backend/.env
             echo "TYPEORM_MIGRATIONS_DIR=${TYPEORM_MIGRATIONS_DIR}" >> backend/.env
@@ -52,7 +52,7 @@ commands:
             curl -sL https://rpm.nodesource.com/setup_12.x | bash -
             yum -y install nodejs
       - checkout
-      - write-envvar-file
+      - create-env-file
       - run:
           when: on_fail
           name: Load migration status from https://memstash.io/ and revert migrations if necessary
@@ -65,7 +65,6 @@ commands:
               npm install
               npm run migrations:revert
             fi         
-
 jobs:
   build-frontend:
     docker:
@@ -204,7 +203,6 @@ jobs:
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text >> .circleci/ansible/inventory.txt)
-            cat .circleci/ansible/inventory.txt  
             curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "${BACKEND_IP}" https://api.memstash.io/values/backend_ip            
       - persist_to_workspace:
           root: ~/
@@ -238,7 +236,7 @@ jobs:
             apk add --update tar gzip ansible nodejs npm
             pip install awscli
             pwd
-      - write-envvar-file
+      - create-env-file
       - run:
           name: Configure server
           command: |
@@ -257,7 +255,7 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - write-envvar-file      
+      - create-env-file      
       - run:
           name: Run migrations and save status to https://memstash.io/
           command: |
@@ -323,6 +321,7 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
+      - create-env-file   
       - run:
           name: Smoke test backend
           command: |
@@ -331,8 +330,6 @@ jobs:
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
                   --output text)
             EC2_URL="http://${BACKEND_IP}:3030/api/status"
-            echo ${EC2_URL}
-            curl ${EC2_URL}
             if curl -s ${EC2_URL} | grep "ok"
             then
               exit 0
@@ -355,7 +352,7 @@ jobs:
       - slack/status:
           fail_only: true 
                       
-  deploy-or-update-cloudfront:
+  deploy-cloudfront:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -446,7 +443,7 @@ workflows:
             branches:
               only:
                 - master
-      - deploy-or-update-cloudfront:
+      - deploy-cloudfront:
           requires: [smoke-test]
           filters:
             branches:

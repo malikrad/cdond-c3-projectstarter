@@ -17,9 +17,9 @@
     npm i
     npm run build
     
-- name: "Start pm2 service"
+- name: Start pm2 service
   shell: |
     cd /home/ubuntu/backend
     ls
-    pm2 start npm -- run "start:prod"
+    pm2 start npm -- run "start:dev"
 

@@ -5,7 +5,7 @@ orbs:
 
 commands:
   auto-destruct-env:
-    description: Destroy the entire infrastructure
+    description: Destroy frontend and backend infrastructure
     steps:
       - run:
           name: Delete all files from the current S3 bucket
@@ -163,22 +163,7 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            yum -y install tar gzip
-      - run:
-          name: Get OldWorkflowID and save it to https://memstash.io/
-          command: |
-            export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
-            echo ${OldWorkflowID}  
-            if [ -n "$OldWorkflowID" ]
-            then
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data ${OldWorkflowID}  https://api.memstash.io/values/old_workflowID
-            else 
-            echo "No old infrastructure exists for UdaPeople"
-            fi            
+      - checkout   
       - run:
           name: deploy backend infra
           command: |
@@ -194,15 +179,7 @@ jobs:
               --template-file .circleci/files/frontend.yml \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project="${CIRCLE_WORKFLOW_ID:0:7}"
-      - run:
-          name: Add Backend EC2 Instance IP to inventory and save to memstash
-          command: |
-            export BACKEND_IP=$(aws ec2 describe-instances \
-              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --output text >> .circleci/ansible/inventory.txt)
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "${BACKEND_IP}" https://api.memstash.io/values/backend_ip            
+              --tags project="${CIRCLE_WORKFLOW_ID:0:7}"    
       - persist_to_workspace:
           root: ~/
           paths:
@@ -232,7 +209,6 @@ jobs:
           command: |
             apk add --update tar gzip ansible nodejs npm
             pip install awscli
-            pwd
       - write-envvars-file
       - run:
           name: Configure server
@@ -253,7 +229,6 @@ jobs:
       - run:
           name: Run migrations and save status to https://memstash.io/
           command: |
-            pwd
             cd backend
             npm install
             npm run migrations > migrations.txt            
@@ -261,7 +236,6 @@ jobs:
               --data $( grep -c "No migrations are pending" migrations.txt ) \
               https://api.memstash.io/values/migration_completion
             cat migrations.txt
-            pwd      
       - slack/status:
           fail_only: true
 
@@ -273,10 +247,6 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --no-cache curl
-            apk add --no-cache tar
-            apk add --no-cache gzip
-            apk add --no-cache ansible
             apk add --no-cache nodejs
             apk add --no-cache npm
             apk add --no-cache bash
@@ -292,13 +262,12 @@ jobs:
             echo "API_URL=$API_URL" >> frontend/.env
             echo "${API_URL}"
       - run:
-          name: "Baking backend API_URL into the front-end"
+          name: "Baking backend API_URL into the frontend"
           command: |
             npm install webpack-dev-server -g
             cd frontend
             npm i
             npm run build      
-            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID}".tar.gz dist
       - run: 
           name: Copy built frontend files to the S3 bucket
           command: |
@@ -365,9 +334,7 @@ jobs:
           command: |
             set TERM=xterm
             export OldWorkflowID=$(aws cloudformation list-exports --query "Exports[?Name=='WorkflowID'].Value" --no-paginate --output text)
-            export STACK_LIST=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE DELETE_FAILED --no-paginate --output text)
             echo Old Workflow Id: "${OldWorkflowID}"
-            echo Stack List: "${STACK_LIST}"
             if [ -n "${OldWorkflowID}" ]
             then
             echo "Update existing CloudFront stack"

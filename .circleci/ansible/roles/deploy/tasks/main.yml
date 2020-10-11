@@ -2,15 +2,9 @@
 
 - name: Copy files from circleci to backend server
   copy:
-    src: /root/project/backend.tar.gz
+    src: /root/project/backend
     dest: /home/ubuntu/
 
-- name: Unzip backend files
-  shell: |
-    cd /home/ubuntu
-    mkdir backend
-    tar -xzvf backend.tar.gz -C .
-    
 - name: Build node service
   shell: |
     cd /home/ubuntu/backend
@@ -20,6 +14,5 @@
 - name: Start pm2 service
   shell: |
     cd /home/ubuntu/backend
-    ls
     pm2 start npm --name backend -- start
 

@@ -17,7 +17,6 @@
     sudo npm cache clean -f
     sudo npm install -g n
     sudo n stable
-    PATH="$PATH"
     npm i
     npm run build
 - name: "Run pm2 daemon"
